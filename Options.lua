@@ -13,6 +13,10 @@ local Blizzkili = LibStub("AceAddon-3.0"):GetAddon("Blizzkili", true)
 
 local L = LibStub("AceLocale-3.0"):GetLocale("Blizzkili", true)
 
+local sm_element = 0.56 -- 4 elements per row
+local med_element = 0.75 -- 3 elements per row
+local lg_element = 1.125  -- 2 elements per row
+local xl_element = 2 -- 1 element per row
 -- Fonts from LSM
 local function fontValues()
     local fonts = LSM:HashTable("font")
@@ -51,22 +55,22 @@ function Options:SetupOptions()
         name = "Blizzkili",
         type = "group",
         args = {
-            general = {
-                name = "General",
-                type = "group",
-                order = 1,
-                args = {
-                    lockFrames = {
-                        name = "Lock Frames",
-                        desc = "Lock frames in place",
-                        type = "toggle",
-                        order = 2,
-                        get = function() return Blizzkili.db.profile.lockFrames end,
-                        set = function(_, value)
-                            Blizzkili.db.profile.lockFrames = value
-                            Blizzkili:UpdateFrameLock()
-                        end,
-                    },
+            -- general = {
+            --     name = "General",
+            --     type = "group",
+            --     order = 1,
+            --     args = {
+            --         lockFrames = {
+            --             name = "Lock Frames",
+            --             desc = "Lock frames in place",
+            --             type = "toggle",
+            --             order = 2,
+            --             get = function() return Blizzkili.db.profile.lockFrames end,
+            --             set = function(_, value)
+            --                 Blizzkili.db.profile.lockFrames = value
+            --                 Blizzkili:UpdateFrameLock()
+            --             end,
+            --         },
                     -- scale = {
                     --     name = "Scale",
                     --     desc = "Overall frame scale",
@@ -95,8 +99,8 @@ function Options:SetupOptions()
                     --         UILib:UpdateFramePosition()
                     --     end,
                     -- },
-                },
-            },
+                -- },
+            -- },
             buttons = {
                 name = "Buttons",
                 type = "group",
@@ -110,6 +114,7 @@ function Options:SetupOptions()
                         max = 10,
                         step = 1,
                         order = 1,
+                        width = med_element,
                         get = function() return Blizzkili.db.profile.buttons.numButtons end,
                         set = function(_, value)
                             Blizzkili.db.profile.buttons.numButtons = value
@@ -123,7 +128,8 @@ function Options:SetupOptions()
                         min = 0.1,
                         max = 5.0,
                         step = 0.1,
-                        order = 1.5,
+                        order = 10,
+                        width = med_element,
                         get = function() return Blizzkili.db.profile.mainScale end,
                         set = function(_, value)
                             Blizzkili.db.profile.mainScale = value
@@ -138,6 +144,7 @@ function Options:SetupOptions()
                         max = 150,
                         step = 1,
                         order = 2,
+                        width = med_element,
                         get = function() return Blizzkili.db.profile.buttons.buttonSize end,
                         set = function(_, value)
                             Blizzkili.db.profile.buttons.buttonSize = value
@@ -152,10 +159,45 @@ function Options:SetupOptions()
                         max = 20,
                         step = 1,
                         order = 3,
+                        width = med_element,
                         get = function() return Blizzkili.db.profile.buttons.buttonSpacing end,
                         set = function(_, value)
                             Blizzkili.db.profile.buttons.buttonSpacing = value
                             UILib.UpdateButtons()
+                        end,
+                    },
+                },
+            },
+            display = {
+                name = "General",
+                type = "group",
+                order = 1,
+                args = {
+                    generalDisplayOptions = {
+                        name = "Display",
+                        type = "header",
+                        order = 0,
+                    },
+                    glowHeader = {
+                        name = "Main Button Glow",
+                        type = "header",
+                        order = 10,
+                    },
+                    displayPositionHeader = {
+                        name = "Positioning",
+                        type = "header",
+                        order = 50,
+                    },
+                    lockFrames = {
+                        name = "Lock Frames",
+                        desc = "Lock frames in place",
+                        type = "toggle",
+                        order = 59,
+                        width = med_element,
+                        get = function() return Blizzkili.db.profile.lockFrames end,
+                        set = function(_, value)
+                            Blizzkili.db.profile.lockFrames = value
+                            Blizzkili:UpdateFrameLock()
                         end,
                     },
                     layout = {
@@ -163,7 +205,8 @@ function Options:SetupOptions()
                         desc = "Direction to grow the buttons",
                         type = "select",
                         values = orderedLayoutValues(),
-                        order = 4,
+                        order = 2,
+                        width = med_element,
                         get = function() return convertLayoutToIndex(Blizzkili.db.profile.buttons.layout) end,
                         set = function(key, value)
                             Blizzkili.db.profile.buttons.layout = convertLayoutToKey(value)
@@ -171,28 +214,23 @@ function Options:SetupOptions()
                         end,
                     },
                     zoomButtons = {
-                        name = "Zoom Button Textures",
+                        name = "Zoom Textures",
                         desc = "Enable zoom effect on button textures",
                         type = "toggle",
-                        order = 5,
+                        order = 3,
+                        width = med_element,
                         get = function() return Blizzkili.db.profile.buttons.zoom end,
                         set = function(_, value)
                             Blizzkili.db.profile.buttons.zoom = value
                             UILib.UpdateButtons()
                         end,
                     },
-                },
-            },
-            display = {
-                name = "Display",
-                type = "group",
-                order = 3,
-                args = {
                     glowMain = {
                         name = "Glow Type",
                         desc = "Enable glow effect on the main button",
                         type = "select",
-                        order = 1,
+                        order = 11,
+                        width = lg_element,
                         values = {
                             [0] = "None",
                             [1] = "Gold",
@@ -210,7 +248,8 @@ function Options:SetupOptions()
                         desc = "Color of the glow effect",
                         type = "color",
                         hasAlpha = true,
-                        order = 2,
+                        order = 12,
+                        width = lg_element,
                         get = function()
                             local color = Blizzkili.db.profile.display.glowColor
                             return color.r, color.g, color.b, color.a
@@ -228,7 +267,8 @@ function Options:SetupOptions()
                         min = -5000,
                         max = 5000,
                         step = 1,
-                        order = 3,
+                        order = 53,
+                        width = lg_element,
                         get = function() return Blizzkili.db.profile.position.x end,
                         set = function(_, value)
                             Blizzkili.db.profile.position.x = value
@@ -242,7 +282,8 @@ function Options:SetupOptions()
                         min = -5000,
                         max = 5000,
                         step = 1,
-                        order = 4,
+                        order = 54,
+                        width = lg_element,
                         get = function() return Blizzkili.db.profile.position.y end,
                         set = function(_, value)
                             Blizzkili.db.profile.position.y = value
@@ -264,7 +305,8 @@ function Options:SetupOptions()
                             ["BOTTOM"] = "Bottom",
                             ["BOTTOMRIGHT"] = "Bottom Right",
                         },
-                        order = 5,
+                        order = 51,
+                        width = lg_element,
                         get = function() return Blizzkili.db.profile.position.anchorPoint end,
                         set = function(_, value)
                             Blizzkili.db.profile.position.anchorPoint = value
@@ -273,7 +315,7 @@ function Options:SetupOptions()
                     },
                     parentAnchor = {
                         name = "Parent Anchor",
-                        desc = "Point on the parent to anchor to",
+                        desc = "Point on the screen to anchor to",
                         type = "select",
                         values = {
                             ["TOPLEFT"] = "Top Left",
@@ -286,7 +328,8 @@ function Options:SetupOptions()
                             ["BOTTOM"] = "Bottom",
                             ["BOTTOMRIGHT"] = "Bottom Right",
                         },
-                        order = 6,
+                        order = 52,
+                        width = lg_element,
                         get = function() return Blizzkili.db.profile.position.parentAnchor end,
                         set = function(_, value)
                             Blizzkili.db.profile.position.parentAnchor = value
@@ -300,11 +343,27 @@ function Options:SetupOptions()
                 type = "group",
                 order = 4,
                 args = {
+                    keybindFontHeader = {
+                        name = "Font",
+                        type = "header",
+                        order = 0,
+                    },
+                    keybindPositionHeader = {
+                        name = "Position",
+                        type = "header",
+                        order = 10,
+                    },
+                    keybindMiscOptions = {
+                        name = "Miscellaneous",
+                        type = "header",
+                        order = 90,
+                    },
                     enabled = {
                         name = "Enable Keybinds",
                         desc = "Show keybind text on buttons",
                         type = "toggle",
-                        order = 1,
+                        order = 91,
+                        width = lg_element,
                         get = function() return Blizzkili.db.profile.keybind.enabled end,
                         set = function(_, value)
                             Blizzkili.db.profile.keybind.enabled = value
@@ -317,7 +376,8 @@ function Options:SetupOptions()
                         type = "select",
                         dialogControl = "LSM30_Font",
                         values = function() return fontValues() end,
-                        order = 2,
+                        order = 3,
+                        width = med_element,
                         get = function() return Blizzkili.db.profile.keybind.font end,
                         set = function(_, value)
                             Blizzkili.db.profile.keybind.font = value
@@ -331,7 +391,8 @@ function Options:SetupOptions()
                         min = 1,
                         max = 100,
                         step = 1,
-                        order = 3,
+                        order = 5,
+                        width = med_element,
                         get = function() return Blizzkili.db.profile.keybind.size end,
                         set = function(_, value)
                             Blizzkili.db.profile.keybind.size = value
@@ -351,6 +412,7 @@ function Options:SetupOptions()
                             ["MONOCHROMETHICKOUTLINE"] = "Monochrome Thick Outline",
                         },
                         order = 4,
+                        width = med_element,
                         get = function() return Blizzkili.db.profile.keybind.outline end,
                         set = function(_, value)
                             Blizzkili.db.profile.keybind.outline = value
@@ -362,7 +424,8 @@ function Options:SetupOptions()
                         desc = "Color of keybind text",
                         type = "color",
                         hasAlpha = true,
-                        order = 5,
+                        order = 9,
+                        width = med_element,
                         get = function()
                             local color = Blizzkili.db.profile.keybind.color
                             return color.r, color.g, color.b, color.a
@@ -387,7 +450,8 @@ function Options:SetupOptions()
                             ["BOTTOM"] = "Bottom",
                             ["BOTTOMRIGHT"] = "Bottom Right",
                         },
-                        order = 6,
+                        order = 11,
+                        width = lg_element,
                         get = function() return Blizzkili.db.profile.keybind.anchorPoint end,
                         set = function(_, value)
                             Blizzkili.db.profile.keybind.anchorPoint = value
@@ -396,7 +460,7 @@ function Options:SetupOptions()
                     },
                     keybindParentAnchor = {
                         name = "Parent Anchor",
-                        desc = "Point on the button to anchor keybind text",
+                        desc = "Point on the parent to anchor keybind text",
                         type = "select",
                         values = {
                             ["TOPLEFT"] = "Top Left",
@@ -409,7 +473,8 @@ function Options:SetupOptions()
                             ["BOTTOM"] = "Bottom",
                             ["BOTTOMRIGHT"] = "Bottom Right",
                         },
-                        order = 7,
+                        order = 12,
+                        width = lg_element,
                         get = function() return Blizzkili.db.profile.keybind.parentAnchor end,
                         set = function(_, value)
                             Blizzkili.db.profile.keybind.parentAnchor = value
@@ -423,7 +488,8 @@ function Options:SetupOptions()
                         min = -100,
                         max = 100,
                         step = 1,
-                        order = 8,
+                        order = 13,
+                        width = lg_element,
                         get = function() return Blizzkili.db.profile.keybind.xOffset end,
                         set = function(_, value)
                             Blizzkili.db.profile.keybind.xOffset = value
@@ -437,7 +503,8 @@ function Options:SetupOptions()
                         min = -100,
                         max = 100,
                         step = 1,
-                        order = 9,
+                        order = 14,
+                        width = lg_element,
                         get = function() return Blizzkili.db.profile.keybind.yOffset end,
                         set = function(_, value)
                             Blizzkili.db.profile.keybind.yOffset = value
@@ -458,7 +525,8 @@ function Options:SetupOptions()
                         min = 0,
                         max = 3,
                         step = 1,
-                        order = 1,
+                        order = 10,
+                        width = med_element,
                         get = function() return Blizzkili.db.profile.debugLevel end,
                         set = function(_, value)
                             Blizzkili.db.profile.debugLevel = value
@@ -471,7 +539,8 @@ function Options:SetupOptions()
                         min = 0.1,
                         max = 5.0,
                         step = 0.1,
-                        order = 2,
+                        order = 1,
+                        width = lg_element,
                         get = function() return Blizzkili.db.profile.inCombatUpdateRate or 1 end,
                         set = function(_, value)
                             Blizzkili.db.profile.inCombatUpdateRate = value
@@ -484,7 +553,8 @@ function Options:SetupOptions()
                         min = 0.1,
                         max = 10.0,
                         step = 0.1,
-                        order = 3,
+                        order = 2,
+                        width = lg_element,
                         get = function() return Blizzkili.db.profile.outOfCombatUpdateRate or 1 end,
                         set = function(_, value)
                             Blizzkili.db.profile.outOfCombatUpdateRate = value
@@ -498,6 +568,6 @@ function Options:SetupOptions()
 
     -- Register the options
     AceConfig:RegisterOptionsTable(addon.longName, options)
-    AceConfigDialog:SetDefaultSize(addon.longName, 600, 500)
+    AceConfigDialog:SetDefaultSize(addon.longName, 625, 500)
     AceConfigDialog:AddToBlizOptions(addon.longName, addon.longName)
 end
