@@ -4,11 +4,11 @@ A rotation helper addon for World of Warcraft 12.0.0 (Midnight Patch) based on H
 
 ## Features
 
-- **Rotation Helper**: Shows recommended abilities in priority order based on your class/spec
+- **Rotation Helper**: Shows recommended abilities based on the Single button Assistant
 - **Single Button Assistant Integration**: Uses Single Button Assistant as rotation reference
 - **Fully Customizable**: All aspects of the UI can be configured
 - **Multiple Fonts**: Separate font configuration for keybinds
-- **Button Management**: Customize number of buttons, size, spacing, and layout
+- **Button Management**: Customize the number of buttons, size, spacing, and layout
 - **Display Options**: Toggle keybinds, main button glow, and positioning
 - **Easy Configuration**: Use `/blizzkili` command to open the configuration panel
 - **Position Management**: Unlock frames to reposition, then lock to protect settings
