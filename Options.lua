@@ -7,12 +7,18 @@ local AceConfigDialog = LibStub("AceConfigDialog-3.0")
 local UILib = LibStub("Blizzkili-UILib")
 local LSM = LibStub("LibSharedMedia-3.0")
 local Options = LibStub:NewLibrary("Blizzkili-Options", 1)
-
+local BlizzardAPI = LibStub("Blizzkili-BlizzardAPI")
+local ActionBarScanner = LibStub("Blizzkili-ActionBarScanner")
 -- Get reference to the addon
 local Blizzkili = LibStub("AceAddon-3.0"):GetAddon("Blizzkili", true)
+local Debug = LibStub("Blizzkili-Debug")
+local error = function(msg) Debug.Error(Blizzkili.db.profile, msg) end
+local info = function(msg) Debug.Info(Blizzkili.db.profile, msg) end
+local trace = function(msg) Debug.Trace(Blizzkili.db.profile, msg) end
 
 local L = LibStub("AceLocale-3.0"):GetLocale("Blizzkili", true)
 
+local xs_element = 0.3
 local sm_element = 0.56 -- 4 elements per row
 local med_element = 0.75 -- 3 elements per row
 local lg_element = 1.125  -- 2 elements per row
@@ -49,58 +55,82 @@ local function convertLayoutToIndex(layoutKey)
     }
     return layoutKeys[layoutKey] or 1
 end
+
 function Options:SetupOptions()
+    local keybindOverrideSpellId = nil
+    local keybindOverrideKeybind = ""
+    local options = nil
+
+    local function refreshLayout ()
+        if options then
+            AceConfigDialog:Open(addonName)
+        end
+    end
+    -- Function to dynamically update the options with the current keybindOverrides
+    local function updateKeybindOverridesOptions()
+        -- Clear out any previous options
+        if not options or not options.args.keybindOverrides or not options.args.keybindOverrides.args.keybindOverrideList then return end
+        options.args.keybindOverrides.args.keybindOverrideList.args = {}
+
+        -- Iterate over the keybindOverrides table and create options for each spellID
+        for spellID, keybind in pairs(Blizzkili.db.profile.keybindOverrides) do
+            -- Add a new option for each spellID
+            -- add remove button
+            local spellInfo = BlizzardAPI.GetSpellInfo(spellID)
+            local spellIcon = spellInfo and spellInfo.iconID or ""
+            local spellName = spellInfo and spellInfo.name or "N/A"
+            options.args.keybindOverrides.args.keybindOverrideList.args[tostring(spellID)] = {
+                type = "group",
+                name = "|T" .. spellIcon .. ":16:16:0:0|t" .. spellName .. " (" .. spellID .. ")",
+                order = spellID,
+                inline = true,
+                args = {
+                    ["remove_" .. spellID] = {
+                    type = "execute",
+                    name = "Delete",
+                    desc = "Remove this keybind override",
+                    width = sm_element,
+                    order = 1,
+                    func = function()
+                        -- Remove the keybind for this spellID
+                        Blizzkili.db.profile.keybindOverrides[spellID] = nil
+                        -- Update Keybinds
+                        ActionBarScanner:ScanActionBars()
+                        -- Update the options again after removal
+                        updateKeybindOverridesOptions()
+                        -- Update UI
+                        UILib.UpdateButtons()
+                        -- Refresh the options window
+                        refreshLayout()
+                    end,
+                    },
+                    ["custom_keybind_" .. spellID] = {
+                        type = "input",
+                        name = "Keybind",
+                        desc = "Custom keybind for this spellID",
+                        width = lg_element,
+                        order = 2,
+                        get = function() return Blizzkili.db.profile.keybindOverrides[spellID] or "" end,
+                        set = function(_, value)
+                            Blizzkili.db.profile.keybindOverrides[spellID] = value
+                            -- Update Keybinds
+                            ActionBarScanner:ScanActionBars()
+                            -- Update UI
+                            UILib.UpdateButtons()
+                            -- Refresh the options window
+                            refreshLayout()
+                        end,
+                    },
+                }
+            }
+        end
+    end
+
     -- Create the options table
-    local options = {
+    options = {
         name = "Blizzkili",
         type = "group",
         args = {
-            -- general = {
-            --     name = "General",
-            --     type = "group",
-            --     order = 1,
-            --     args = {
-            --         lockFrames = {
-            --             name = "Lock Frames",
-            --             desc = "Lock frames in place",
-            --             type = "toggle",
-            --             order = 2,
-            --             get = function() return Blizzkili.db.profile.lockFrames end,
-            --             set = function(_, value)
-            --                 Blizzkili.db.profile.lockFrames = value
-            --                 Blizzkili:UpdateFrameLock()
-            --             end,
-            --         },
-                    -- scale = {
-                    --     name = "Scale",
-                    --     desc = "Overall frame scale",
-                    --     type = "range",
-                    --     min = 0.5,
-                    --     max = 2.0,
-                    --     step = 0.1,
-                    --     order = 3,
-                    --     get = function() return Blizzkili.db.profile.scale end,
-                    --     set = function(_, value)
-                    --         Blizzkili.db.profile.scale = value
-                    --         UILib:UpdateFramePosition()
-                    --     end,
-                    -- },
-                    -- alpha = {
-                    --     name = "Transparency",
-                    --     desc = "Frame alpha transparency",
-                    --     type = "range",
-                    --     min = 0.1,
-                    --     max = 1.0,
-                    --     step = 0.1,
-                    --     order = 4,
-                    --     get = function() return Blizzkili.db.profile.alpha end,
-                    --     set = function(_, value)
-                    --         Blizzkili.db.profile.alpha = value
-                    --         UILib:UpdateFramePosition()
-                    --     end,
-                    -- },
-                -- },
-            -- },
             buttons = {
                 name = "Buttons",
                 type = "group",
@@ -225,6 +255,35 @@ function Options:SetupOptions()
                             UILib.UpdateButtons()
                         end,
                     },
+            --     scale = {
+            --         name = "Scale",
+            --         desc = "Overall frame scale",
+            --         type = "range",
+            --         min = 0.5,
+            --         max = 2.0,
+            --         step = 0.1,
+            --         order = 3,
+            --         get = function() return Blizzkili.db.profile.scale end,
+            --         set = function(_, value)
+            --             Blizzkili.db.profile.scale = value
+            --             UILib:UpdateFramePosition()
+            --         end,
+            --     },
+            --     alpha = {
+            --         name = "Transparency",
+            --         desc = "Frame alpha transparency",
+            --         type = "range",
+            --         min = 0.1,
+            --         max = 1.0,
+            --         step = 0.1,
+            --         order = 4,
+            --         get = function() return Blizzkili.db.profile.alpha end,
+            --         set = function(_, value)
+            --             Blizzkili.db.profile.alpha = value
+            --             UILib:UpdateFramePosition()
+            --         end,
+            --         },
+            --     },
                     glowMain = {
                         name = "Glow Type",
                         desc = "Enable glow effect on the main button",
@@ -256,7 +315,8 @@ function Options:SetupOptions()
                         end,
                         set = function(_, r, g, b, a)
                             Blizzkili.db.profile.display.glowColor = { r = r, g = g, b = b, a = a }
-                            Blizzkili.db.profile.display.glowMain = 3 -- switch to custom color if not already
+                            Blizzkili.db.profile.display.glowMain = 100 -- switch to custom color if not already
+                             refreshLayout()
                             UILib.UpdateButtons()
                         end,
                     },
@@ -513,6 +573,104 @@ function Options:SetupOptions()
                     },
                 },
             },
+            keybindOverrides = {
+                name = "Keybind Overrides",
+                type = "group",
+                order = 5,
+                args = {
+                    keybindOverrideHeader = {
+                        name = "Keybind Override Options",
+                        type = "header",
+                        order = 0,
+                    },
+                    keybindOverrideDesc = {
+                        name = "These options allow you to override the default keybind display behavior. This is useful if you want to show keybinds only on certain buttons or under certain conditions.",
+                        type = "description",
+                        order = 1,
+                    },
+                    -- Additional override options can be added here
+                    keybindOverrideEnabled = {
+                        name = "Enable Keybind Overrides",
+                        desc = "Enable custom keybind display rules",
+                        type = "toggle",
+                        order = 3,
+                        width = xl_element,
+                        get = function() return Blizzkili.db.profile.keybindOverrideEnabled end,
+                        set = function(_, value)
+                            Blizzkili.db.profile.keybindOverrideEnabled = value
+                            -- Update Keybinds
+                            ActionBarScanner:ScanActionBars()
+                            UILib.UpdateButtons()
+                        end,
+                    },
+                    keybindOverrideAddHeader = {
+                        name = "Add New Override",
+                        type = "header",
+                        order = 10,
+                    },
+                    keybindAllSpells = {
+                        name = "All Spells",
+                        type = "select",
+                        order = 11,
+                        width = med_element,
+                        values = function() return BlizzardAPI:GetAvailableSpells() end,
+                        get = function() return keybindOverrideSpellId end,
+                        set = function(_, value)
+                            keybindOverrideSpellId = value
+                            refreshLayout()
+                        end,
+                    },
+                    keybindOverrideSpellInput = {
+                        name = "Spell ID",
+                        desc = "Show keybind override for this spell ID",
+                        type = "input",
+                        order = 12,
+                        width = xs_element,
+                        get = function() return tostring(keybindOverrideSpellId or "") end,
+                        set = function(_, value)
+                            keybindOverrideSpellId = tonumber(value) or 0
+                        end,
+                    },
+                    keybindOverridesKeybind = {
+                        name = "Keybind",
+                        desc = "Keybind to show when override spell is shown",
+                        type = "input",
+                        order = 13,
+                        width = xs_element,
+                        get = function() return keybindOverrideKeybind end,
+                        set = function(_, value)
+                            keybindOverrideKeybind = value
+                        end,
+                    },
+                    keybindOverrideSave = {
+                        name = "Save",
+                        desc = "Save the current override binding",
+                        type = "execute",
+                        order = 14,
+                        width = sm_element,
+                        func = function()
+                            if keybindOverrideSpellId and keybindOverrideSpellId > 0 and keybindOverrideKeybind ~= "" then
+                                Blizzkili.db.profile.keybindOverrides[keybindOverrideSpellId] = keybindOverrideKeybind
+                                keybindOverrideSpellId = nil
+                                keybindOverrideKeybind = ""
+                                updateKeybindOverridesOptions()
+                                -- Update Keybinds
+                                ActionBarScanner:ScanActionBars()
+                                UILib.UpdateButtons()
+                            else
+                                error("Please enter a valid spell ID and keybind.")
+                            end
+                        end,
+                    },
+                    keybindOverrideList = {
+                        name = "Current Overrides",
+                        type = "group",
+                        order = 20,
+                        inline = true,
+                        args = {}
+                    },
+                },
+            },
             misc = {
                 name = "Miscellaneous",
                 type = "group",
@@ -560,12 +718,26 @@ function Options:SetupOptions()
                             Blizzkili.db.profile.outOfCombatUpdateRate = value
                         end
                     },
+                    keybindUpdateRate ={
+                        name = "Keybind Scan Force Update Rate",
+                        desc = "How often to force update all keybinds",
+                        type = "range",
+                        min = 1,
+                        max = 300.0,
+                        step = 1,
+                        order = 3,
+                        width = lg_element,
+                        get = function() return Blizzkili.db.profile.keybindUpdateRate or 10 end,
+                        set = function(_, value)
+                            Blizzkili.db.profile.keybindUpdateRate = value
+                        end,
+                    },
                 },
             },
             profiles = LibStub("AceDBOptions-3.0"):GetOptionsTable(Blizzkili.db),
         },
     }
-
+    updateKeybindOverridesOptions()
     -- Register the options
     AceConfig:RegisterOptionsTable(addon.longName, options)
     AceConfigDialog:SetDefaultSize(addon.longName, 625, 500)

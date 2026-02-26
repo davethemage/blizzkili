@@ -41,6 +41,10 @@ function Blizzkili:OnEnable()
     ActionBarScanner:OnEnable()
     self:RegisterEvent("PLAYER_LOGIN", "OnLogin")
     self:RegisterEvent("PLAYER_ENTERING_WORLD", "PlayerEnteringWorld")
+    self:RegisterEvent("ZONE_CHANGED", "PlayerEnteringWorld")
+    self:RegisterEvent("ZONE_CHANGED_INDOORS", "PlayerEnteringWorld")
+    self:RegisterEvent("ZONE_CHANGED_NEW_AREA", "PlayerEnteringWorld")
+    self:RegisterEvent("PLAYER_MOUNT_DISPLAY_CHANGED", "PlayerEnteringWorld")
     self:RegisterEvent("ACTIONBAR_SLOT_CHANGED", "ActionbarChanged")
     self:RegisterEvent("PLAYER_REGEN_ENABLED", "OutOfCombat")
     self:RegisterEvent("PLAYER_REGEN_DISABLED", "InCombat")
@@ -57,7 +61,7 @@ function Blizzkili:OnLogin()
 end
 
 -- Update OnUnitAura
--- TODO Fires alot put in a throttle to prevent performance issues.
+-- TODO Fires alot might not be needed
 function Blizzkili:OnUnitAura(unit)
     -- if unit == "player" then
     --     self:UpdateRotation()
@@ -70,13 +74,16 @@ function Blizzkili:PlayerEnteringWorld()
     UILib.UpdateButtons()
     -- Lock or unlock the frame
     self:UpdateFrameLock()
-    ActionBarScanner:ScanActionBars()
     if self.ticker then
         self.ticker:Cancel()
         self.ticker = nil
     end
     self.ticker = C_Timer.NewTicker(self.db.profile.outOfCombatUpdateRate, function() self:UpdateRotation() end)
-
+    if self.actionbarScanner then
+        self.actionbarScanner:Cancel()
+        self.actionbarScanner = nil
+    end
+    self.actionbarScanner = C_Timer.NewTicker(self.db.profile.keybindUpdateRate, function() ActionBarScanner:ScanActionBars() end)
 end
 
 function Blizzkili:OutOfCombat()
@@ -85,6 +92,7 @@ function Blizzkili:OutOfCombat()
         self.ticker:Cancel()
         self.ticker = nil
     end
+    ActionBarScanner:ScanActionBars()
     -- Out of combat we can update less frequently since we can use all API functions, so we can slow down the ticker to reduce CPU usage.
     self.ticker = C_Timer.NewTicker(self.db.profile.outOfCombatUpdateRate, function() self:UpdateRotation() end)
 end
@@ -98,7 +106,12 @@ function Blizzkili:InCombat()
 end
 
 --Action bar changed event handler
-function Blizzkili:ActionbarChanged()
+function Blizzkili:ActionbarChanged(_, slot)
+    local type, id, subtype = GetActionInfo(slot)
+    -- if it's the single button assistant, if it is, ignore, it fires too frequently
+    if subtype == "assistedcombat" then return end
+    info("Action bar changed, rescaning action bars")
+
     ActionBarScanner:ScanActionBars()
 end
 

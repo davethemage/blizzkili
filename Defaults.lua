@@ -9,7 +9,7 @@ local Blizzkili = LibStub("AceAddon-3.0"):NewAddon(
 )
 addon.shortName = "BK"
 addon.longName = "Blizzkili"
-addon.version = "1.0.2" --keep in sync with toc and README
+addon.version = "1.0.3" --keep in sync with toc and README
 
 -- Default configuration values
 Blizzkili.defaults = {
@@ -22,6 +22,8 @@ Blizzkili.defaults = {
         debugLevel = 0,
         inCombatUpdateRate = 0.2,
         outOfCombatUpdateRate = 1.0,
+        keybindUpdateRate = 30,
+        keybindOverrideEnabled = true,
         position = {
             x = 0,
             y = 0,
@@ -62,6 +64,9 @@ Blizzkili.defaults = {
             anchorPoint = "BOTTOMRIGHT",
             xOffset = -2,
             yOffset = -2,
+        },
+        keybindOverrides = {
+            -- [spellID] = "keybind"
         },
     }
 }

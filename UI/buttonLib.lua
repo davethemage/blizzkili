@@ -155,7 +155,7 @@ function ButtonLib.UpdateButton(button, spellId)
         -- Get spell texture for the button
         local spellTexture = BlizzardAPI.GetSpellTexture(spellId)
         button.spellId = spellId -- Store spell ID on button for reference
-        local keybind = ActionBarScanner:GetSpellKeybindsForId(spellId)
+        local keybind = ActionBarScanner:GetSpellKeybindsForId(spellId, true)
         ButtonLib.SetKeybindText(button, tostring(keybind)) -- Update keybind text
         button:SetNormalTexture(spellTexture)
         if not BlizzardAPI:InCombat() then

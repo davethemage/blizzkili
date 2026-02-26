@@ -12,7 +12,6 @@ local info = function(msg) Debug.Info(Blizzkili.db.profile, msg) end
 local trace = function(msg) Debug.Trace(Blizzkili.db.profile, msg) end
 -- local bindings, rebuild on reload and login to ensure we have the latest data, also allows for dynamic updates if needed in the future.
 local spellBindings = {}
-
 -- Action bar names to scan
 local actionBars = {
     "Action",
@@ -36,9 +35,21 @@ function ActionBarScanner:OnEnable()
     self:ScanActionBars()
 end
 
+-- Normalize keybinds to a consistent format (e.g. "CTRL-SHIFT-A" -> "C-S-A")
+local function NormalizeKeybind(key)
+    if not key then return nil end
+
+    -- Replace modifiers
+    key = key:gsub("CTRL%-", "C")
+    key = key:gsub("ALT%-", "A")
+    key = key:gsub("SHIFT%-", "S")
+
+    return key
+end
+
 -- Scan all action bars
 function ActionBarScanner:ScanActionBars()
-    trace("Scanning action bars for spell bindings...")
+    info("Scanning action bars for spell bindings...")
     --reset bindings
     spellBindings = {}
 
@@ -54,11 +65,20 @@ function ActionBarScanner:ScanActionBars()
                     -- Only consider spells and macros (which can contain spells)
                     if id  and (actionType == "spell"  or actionType == "macro") then
                         -- Get spell name
-                        local spellName = BlizzardAPI.GetSpellInfo(id)
+                        local spellName = BlizzardAPI.GetSpellName(id)
                         local bindingAction = button.bindingAction or ""
 
                         -- Get keybinds for this action
-                        local keybind = self:GetSpellKeybinds(bindingAction)
+                        local keybind = nil
+                        if Blizzkili.db.profile.keybindOverrideEnabled and Blizzkili.db.profile.keybindOverrides then
+                            keybind = Blizzkili.db.profile.keybindOverrides[id]
+                        end
+                        if keybind then
+                            trace("Found keybind override " .. keybind .. " for spell ".. spellName .. " (id: " .. id .. ")")
+                            keybind = NormalizeKeybind(keybind)
+                        else
+                            keybind = self:GetSpellKeybinds(bindingAction)
+                        end
 
                         -- Store in database if we have a keybind
                         -- preventing overriding keybind s with an empty keybind
@@ -76,16 +96,7 @@ function ActionBarScanner:ScanActionBars()
         end
     end
 end
-local function NormalizeKeybind(key)
-    if not key then return nil end
 
-    -- Replace modifiers
-    key = key:gsub("CTRL%-", "C")
-    key = key:gsub("ALT%-", "A")
-    key = key:gsub("SHIFT%-", "S")
-
-    return key
-end
 -- Get keybinds for a spell
 function ActionBarScanner:GetSpellKeybinds(buttonName)
     local keybind = nil
@@ -116,9 +127,12 @@ function ActionBarScanner:GetSpellBindings()
 end
 
 -- Get keybinds for a specific spell ID
-function ActionBarScanner:GetSpellKeybindsForId(spellId)
-    if spellBindings[spellId] and spellBindings[spellId].keybind then
-        return spellBindings[spellId].keybind or ""
+function ActionBarScanner:GetSpellKeybindsForId(spellId, rescanIfMissing)
+    if spellBindings[spellId] and spellBindings[spellId].keybind and spellBindings[spellId].keybind ~= "" then
+        return spellBindings[spellId].keybind
+    end
+    if rescanIfMissing then
+        ActionBarScanner:ForceScan()
     end
     return ""
 end
@@ -144,11 +158,19 @@ function ActionBarScanner:GetSpellActionButton(spellId)
     return nil
 end
 
--- Force a re-scan of action bars
--- TODO might be unnecessary, we can call ScanActionBars directly
+-- Force a re-scan of action bars(with throttle)
+-- Add a variable to track the last time the function was called
+local lastForcedScanTime = 0
+
 function ActionBarScanner:ForceScan()
-    info("Forcing re-scan of action bars...")
-    self:ScanActionBars()
+    local currentTime = GetTime() -- Get the current time (in seconds)
+    local throttleInterval = 1 -- Time in seconds
+    -- Only run if enough time has passed (throttling)
+    if currentTime - lastForcedScanTime >= throttleInterval then
+        lastForcedScanTime = currentTime -- Update the last scan time
+        error("Forcing re-scan of action bars...")
+        self:ScanActionBars() -- Proceed with the scan
+    end
 end
 
 -- Get all spell IDs that have been scanned
