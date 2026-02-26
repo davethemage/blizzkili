@@ -11,7 +11,11 @@ local UILib = LibStub("Blizzkili-UILib")
 local BlizzardAPI = LibStub("Blizzkili-BlizzardAPI")
 local ActionBarScanner = LibStub("Blizzkili-ActionBarScanner")
 local ButtonLib = LibStub("Blizzkili-ButtonLib")
-
+local Options = LibStub("Blizzkili-Options")
+local Debug = LibStub("Blizzkili-Debug")
+local error = function(msg) Debug.Error(Blizzkili.db.profile, msg) end
+local info = function(msg) Debug.Info(Blizzkili.db.profile, msg) end
+local trace = function(msg) Debug.Trace(Blizzkili.db.profile, msg) end
 
 -- Initialize the addon
 function Blizzkili:OnInitialize()
@@ -26,9 +30,9 @@ function Blizzkili:OnInitialize()
     -- Create the main frame
     -- UILib.CreateUI()
     ActionBarScanner:OnInitialize()
-
+    Options:SetupOptions()
     -- Print initialization message
-    print("Blizzkili addon initialized")
+    DEFAULT_CHAT_FRAME:AddMessage("|cff00ff00["..addon.shortName.."]|r ".. addon.longName .." v".. addon.version .. " - |cff00ff00/".. addon.shortName:lower() .. "|r")
 end
 
 -- Enable the addon
@@ -45,25 +49,24 @@ end
 
 -- Handle player login
 function Blizzkili:OnLogin()
+    info("Player logged in,")
     -- Initialize the UI
+    UILib.CreateUI()
+    self:UpdateRotation()
     ActionBarScanner:ScanActionBars()
-    if not self.initialized then
-        UILib.CreateUI()
-        self:UpdateRotation()
-        self.initialized = true
-    end
 end
 
 -- Update OnUnitAura
 -- TODO Fires alot put in a throttle to prevent performance issues.
 function Blizzkili:OnUnitAura(unit)
-    if unit == "player" then
-        self:UpdateRotation()
-    end
+    -- if unit == "player" then
+    --     self:UpdateRotation()
+    -- end
 end
 
 -- PlayerEnteringWorld event handler
 function Blizzkili:PlayerEnteringWorld()
+    info("Player entering world")
     UILib.UpdateButtons()
     -- Lock or unlock the frame
     self:UpdateFrameLock()
@@ -72,23 +75,26 @@ function Blizzkili:PlayerEnteringWorld()
         self.ticker:Cancel()
         self.ticker = nil
     end
-    self.ticker = C_Timer.NewTicker(0.1, function() self:UpdateRotation() end)
+    self.ticker = C_Timer.NewTicker(self.db.profile.outOfCombatUpdateRate, function() self:UpdateRotation() end)
 
 end
 
 function Blizzkili:OutOfCombat()
+    UILib.UpdateButtons()
     if self.ticker then
         self.ticker:Cancel()
         self.ticker = nil
     end
-    self:UpdateRotation()
+    -- Out of combat we can update less frequently since we can use all API functions, so we can slow down the ticker to reduce CPU usage.
+    self.ticker = C_Timer.NewTicker(self.db.profile.outOfCombatUpdateRate, function() self:UpdateRotation() end)
 end
 
 function Blizzkili:InCombat()
-    if not self.ticker then
-        self.ticker = C_Timer.NewTicker(0.1, function() self:UpdateRotation() end)
+    if self.ticker then
+        self.ticker:Cancel()
+        self.ticker = nil
     end
-    self:UpdateRotation()
+    self.ticker = C_Timer.NewTicker(self.db.profile.inCombatUpdateRate, function() self:UpdateRotation() end)
 end
 
 --Action bar changed event handler
@@ -98,14 +104,17 @@ end
 
 -- Update frame lock status
 function Blizzkili:UpdateFrameLock()
+    trace("Updating frame lock status")
     if not self.frame then return end
 
     if self.db.profile.lockFrames then
+        info("Locking frames")
         self.frame:EnableMouse(false)
         self.frame:SetMovable(false)
         self.frame:SetBackdropColor(0, 0, 0, 0)
 
     else
+        info("Unlocking frames")
         self.frame:EnableMouse(true)
         self.frame:SetMovable(true)
         self.frame:SetBackdropColor(0, 0, 0, 0.7)
@@ -117,9 +126,10 @@ end
 function Blizzkili:UpdateRotation()
     -- This implements the Single Button Assistant rotation logic
     if not self.buttons then
-        print("No buttons found, cannot update rotation")
+        error("No buttons found, cannot update rotation")
         return
     end
+    trace("Updating rotation display") --debug
 
     -- Get the current rotation information
     local rotationSpells = BlizzardAPI.GetAssistedCombatRotation()
@@ -148,11 +158,11 @@ function Blizzkili:SlashCommand(input)
     if input == "lock" then
         self.db.profile.lockFrames = true
         self:UpdateFrameLock()
-        print("Blizzkili frames locked")
+        info("Blizzkili frames locked")
     elseif input == "unlock" then
         self.db.profile.lockFrames = false
         self:UpdateFrameLock()
-        print("Blizzkili frames unlocked")
+        info("Blizzkili frames unlocked")
     else
         -- Open configuration panel
         if AceConfigDialog and AceConfigDialog.OpenFrames["Blizzkili"] then

@@ -1,9 +1,12 @@
--- local LSM = LibStub("LibSharedMedia-3.0")
+local addonName, addon = ...
 local UILib = LibStub:NewLibrary("Blizzkili-UILib", 1)
 local Blizzkili = LibStub("AceAddon-3.0"):GetAddon("Blizzkili", true)
 local ButtonLib = LibStub("Blizzkili-ButtonLib")
 local BlizzardAPI = LibStub("Blizzkili-BlizzardAPI")
-
+local Debug = LibStub("Blizzkili-Debug")
+local error = function(msg) Debug.Error(Blizzkili.db.profile, msg) end
+local info = function(msg) Debug.Info(Blizzkili.db.profile, msg) end
+local trace = function(msg) Debug.Trace(Blizzkili.db.profile, msg) end
 local FRAME_PADDING = 10
 
 --Creates the parent frame
@@ -67,6 +70,8 @@ local function GetValueForOrientation(layout, horizontalValue, verticalValue)
 end
 
 local function CreateButtons()
+  info("Creating buttons")
+   -- Clean up existing buttons if they exist
   if Blizzkili.buttons then
     for _, button in ipairs(Blizzkili.buttons) do
       button:Hide()
@@ -100,7 +105,7 @@ local function CreateButtons()
   ButtonLib.CreateGlow(mainButton, profile)
 
   ButtonLib.CreateKeybind(mainButton, mainScale, profile.keybind)
-  ButtonLib.CreateStacks(mainButton, mainScale, profile.stacks)
+  -- ButtonLib.CreateStacks(mainButton, mainScale, profile.stacks)
 
   mainButton:Show()
   Blizzkili.buttons[1] = mainButton
@@ -117,10 +122,12 @@ local function CreateButtons()
       GetValueForOrientation(layout, "RIGHT", "BOTTOM")
     )
     ButtonLib.CreateKeybind(button, 1, profile.keybind)
-    ButtonLib.CreateStacks(button, 1, profile.stacks)
+    -- ButtonLib.CreateStacks(button, 1, profile.stacks)
     if i <= profile.buttons.numButtons then
+      trace("Showing button " .. i)
       button:Show()
     else
+      trace("Hiding button " .. i)
       button:Hide()
     end
     Blizzkili.buttons[i + 1] = button
@@ -129,14 +136,19 @@ end
 
 function UILib.UpdateFramePosition()
   if not Blizzkili.frame or BlizzardAPI:InCombat() then return end
-local profile = Blizzkili.db.profile
+  info("Updating frame position")
+  local profile = Blizzkili.db.profile
   Blizzkili.frame:SetPoint(profile.position.anchorPoint or "CENTER", UIParent, profile.position.parentAnchor or "CENTER", profile.position.x or 0, profile.position.y or 0)
   -- Blizzkili.frame:SetScale(Blizzkili.db.profile.scale)
   -- Blizzkili.frame:SetAlpha(Blizzkili.db.profile.alpha)
 end
 
 function UILib.UpdateFrameSize()
-  if not Blizzkili.frame then return end
+  info("Updating frame size")
+  if not Blizzkili.frame then
+    error("No frame found, cannot update frame size")
+    return
+  end
   local profile = Blizzkili.db.profile
   local mainScale = profile.mainScale or 1.2
   local buttonSize = profile.buttons.buttonSize or 40
@@ -154,6 +166,7 @@ function UILib.UpdateFrameSize()
 end
 
 function UILib.CreateUI()
+  info("Creating UI")
   -- Create the main frame
   CreateMainFrame()
 
@@ -166,6 +179,7 @@ function UILib.CreateUI()
 end
 
 function UILib.UpdateButtons()
+  info("Updating buttons")
   local profile = Blizzkili.db.profile
   for i = 1, #Blizzkili.buttons do
     local button = Blizzkili.buttons[i]

@@ -9,7 +9,7 @@ local Blizzkili = LibStub("AceAddon-3.0"):NewAddon(
 )
 addon.shortName = "BK"
 addon.longName = "Blizzkili"
-addon.version = "1.0.0" --keep in sync with toc and README
+addon.version = "1.0.1" --keep in sync with toc and README
 
 -- Default configuration values
 Blizzkili.defaults = {
@@ -20,6 +20,8 @@ Blizzkili.defaults = {
         alpha = 1.0, --todo
         mainScale = 1.2,
         debugLevel = 0,
+        inCombatUpdateRate = 0.2,
+        outOfCombatUpdateRate = 1.0,
         position = {
             x = 0,
             y = 0,
@@ -27,7 +29,7 @@ Blizzkili.defaults = {
             parentAnchor = "CENTER"
         },
         buttons = {
-            numButtons = 5,
+            numButtons = 3,
             buttonSize = 40,
             buttonSpacing = 5,
             layout = "horizontal", -- or "vertical"
@@ -36,7 +38,7 @@ Blizzkili.defaults = {
         display = {
             showCooldowns = false,
             showStacks = false,
-            glowMain = 0,
+            glowMain = 2,
             glowColor = { r = 1, g = 1, b = 0, a = 1 },
         },
         keybind = {
@@ -51,7 +53,7 @@ Blizzkili.defaults = {
             yOffset = 0,
 
         },
-        stacks = {
+        stacks = { --todo
             enabled = true,
             font = "Friz Quadrata TT",
             size = 12,

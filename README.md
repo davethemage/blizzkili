@@ -73,11 +73,10 @@ A rotation helper addon for World of Warcraft 12.0.0 (Midnight Patch) based on H
 - Rotation logic is simplified - only uses Blizzards Single Button Assistant API
 - Keybind detection is basic and only works with default bars
 - Secure Action buttons mean that they cannot be moved or hidden/shown while in combat
-- Requires LibSharedMedia for font selection
 
 ## Version
 
-- Current: 1.0.0
+- Current: 1.0.1
 - WoW Patch: 12.0.0 (Midnight)
 
 ## TODO/Future Plans

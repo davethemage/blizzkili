@@ -1,14 +1,15 @@
 -- ActionBarScanner.lua
-local LibStub = LibStub
-local AceAddon = LibStub("AceAddon-3.0")
-local AceDB = LibStub("AceDB-3.0")
-
+local addonName, addon = ...
 -- Create the library
 local name, version = "Blizzkili-ActionBarScanner", 1
 local ActionBarScanner = LibStub:NewLibrary(name, version)
 if not ActionBarScanner then return end
 local BlizzardAPI = LibStub("Blizzkili-BlizzardAPI")
-
+local Blizzkili = LibStub("AceAddon-3.0"):GetAddon("Blizzkili", true)
+local Debug = LibStub("Blizzkili-Debug")
+local error = function(msg) Debug.Error(Blizzkili.db.profile, msg) end
+local info = function(msg) Debug.Info(Blizzkili.db.profile, msg) end
+local trace = function(msg) Debug.Trace(Blizzkili.db.profile, msg) end
 -- local bindings, rebuild on reload and login to ensure we have the latest data, also allows for dynamic updates if needed in the future.
 local spellBindings = {}
 
@@ -26,7 +27,7 @@ local actionBars = {
 
 -- Initialize the library
 function ActionBarScanner:OnInitialize()
-    -- self.db = AceDB:New("ActionBarScannerDB", defaults, true)
+-- do nothing for now, we can move initialization code here if needed in the future
 end
 
 -- Enable the library
@@ -37,8 +38,9 @@ end
 
 -- Scan all action bars
 function ActionBarScanner:ScanActionBars()
+    trace("Scanning action bars for spell bindings...")
     --reset bindings
-    -- spellBindings = {}
+    spellBindings = {}
 
     for _, barName in ipairs(actionBars) do
         for i = 1, 12 do
@@ -58,13 +60,16 @@ function ActionBarScanner:ScanActionBars()
                         -- Get keybinds for this action
                         local keybind = self:GetSpellKeybinds(bindingAction)
 
-                        -- Store in database
-                        spellBindings[id] = {
-                            spellName = spellName,
-                            keybind = keybind,
-                            actionButton = buttonName,
-                            slot = slot
-                        }
+                        -- Store in database if we have a keybind
+                        -- preventing overriding keybind s with an empty keybind
+                        if keybind then
+                            spellBindings[id] = {
+                                spellName = spellName,
+                                keybind = keybind,
+                                actionButton = buttonName,
+                                slot = slot
+                            }
+                        end
                     end
                 end
             end
@@ -91,7 +96,7 @@ function ActionBarScanner:GetSpellKeybinds(buttonName)
     elseif key2 then
         keybind = key2
     end
-
+    trace("Found keybind " .. tostring(keybind) .. " for button " .. tostring(buttonName))
     return NormalizeKeybind(keybind)
 end
 
@@ -142,6 +147,7 @@ end
 -- Force a re-scan of action bars
 -- TODO might be unnecessary, we can call ScanActionBars directly
 function ActionBarScanner:ForceScan()
+    info("Forcing re-scan of action bars...")
     self:ScanActionBars()
 end
 
@@ -153,8 +159,3 @@ function ActionBarScanner:GetAllSpellIds()
     end
     return spellIds
 end
-
--- Create the library instance
--- local instance = AceAddon:NewAddon("ActionBarScanner", "AceEvent-3.0")
--- instance:OnInitialize()
--- instance:OnEnable()
