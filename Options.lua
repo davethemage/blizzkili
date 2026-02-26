@@ -434,7 +434,6 @@ function Options:SetupOptions()
                         name = "Font",
                         desc = "Font for keybind text",
                         type = "select",
-                        dialogControl = "LSM30_Font",
                         values = function() return fontValues() end,
                         order = 3,
                         width = med_element,

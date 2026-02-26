@@ -198,6 +198,7 @@ end
 function UILib.UpdateButtons()
   info("Updating buttons")
   local profile = Blizzkili.db.profile
+  if not Blizzkili.buttons then return end
   for i = 1, #Blizzkili.buttons do
     local button = Blizzkili.buttons[i]
     if button then
@@ -232,8 +233,8 @@ function UILib.UpdateButtons()
         end
         ButtonLib.UpdateKeybind(button, 1, profile.keybind)
       end
-      --update padding
       if not BlizzardAPI:InCombat() then
+        --update padding
         local buttonSpacing = profile.buttons.buttonSpacing or 5
         local layout = validateLayout(profile.buttons.layout)
         local anchorPoint = GetValueForOrientation(layout, "LEFT", "RIGHT", "TOP", "BOTTOM")

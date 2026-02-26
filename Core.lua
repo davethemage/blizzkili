@@ -27,8 +27,6 @@ function Blizzkili:OnInitialize()
     Blizzkili:RegisterChatCommand(addon.shortName:lower(), "SlashCommand")
     Blizzkili:RegisterChatCommand("hekili", "SlashCommand")
 
-    -- Create the main frame
-    -- UILib.CreateUI()
     ActionBarScanner:OnInitialize()
     Options:SetupOptions()
     -- Print initialization message
@@ -54,10 +52,7 @@ end
 -- Handle player login
 function Blizzkili:OnLogin()
     info("Player logged in,")
-    -- Initialize the UI
-    UILib.CreateUI()
-    self:UpdateRotation()
-    ActionBarScanner:ScanActionBars()
+    self.isInitalized = false
 end
 
 -- Update OnUnitAura
@@ -71,6 +66,11 @@ end
 -- PlayerEnteringWorld event handler
 function Blizzkili:PlayerEnteringWorld()
     info("Player entering world")
+    -- Initialize the UI
+    if not self.isInitialized then
+        UILib.CreateUI()
+        self.isInitialized = true
+    end
     UILib.UpdateButtons()
     -- Lock or unlock the frame
     self:UpdateFrameLock()
@@ -159,7 +159,7 @@ function Blizzkili:UpdateRotation()
     -- Update buttons based on rotation
     for i, button in ipairs(self.buttons) do
         if i <= #self.buttons and i <= #rotationSpells  and i <= self.db.profile.buttons.numButtons then
-            ButtonLib.UpdateButton(button, rotationSpells[i])
+            ButtonLib.UpdateButton(button, rotationSpells[i], self.db.profile)
         elseif not BlizzardAPI:InCombat() then
             button:Hide()  -- Hide unused buttons when not in combat
         end

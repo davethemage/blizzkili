@@ -150,7 +150,7 @@ function ButtonLib.ZoomButtonTexture(button, zoom)
   tex:SetTexCoord(zoom, 1 - zoom, zoom, 1 - zoom)
 end
 
-function ButtonLib.UpdateButton(button, spellId)
+function ButtonLib.UpdateButton(button, spellId, profile)
     if spellId then
         -- Get spell texture for the button
         local spellTexture = BlizzardAPI.GetSpellTexture(spellId)
@@ -158,6 +158,12 @@ function ButtonLib.UpdateButton(button, spellId)
         local keybind = ActionBarScanner:GetSpellKeybindsForId(spellId, true)
         ButtonLib.SetKeybindText(button, tostring(keybind)) -- Update keybind text
         button:SetNormalTexture(spellTexture)
+        -- update zoom
+        if profile.buttons.zoom then
+          ButtonLib.ZoomButtonTexture(button, 0.08)
+        else
+          ButtonLib.ZoomButtonTexture(button, 0)
+        end
         if not BlizzardAPI:InCombat() then
             button:Show()
         end
