@@ -7,7 +7,16 @@ local Debug = LibStub("Blizzkili-Debug")
 local error = function(msg) Debug.Error(Blizzkili.db.profile, msg) end
 local info = function(msg) Debug.Info(Blizzkili.db.profile, msg) end
 local trace = function(msg) Debug.Trace(Blizzkili.db.profile, msg) end
-local FRAME_PADDING = 10
+local FRAME_PADDING = 10 --Value for the moveable frame
+
+local function validateLayout(layout)
+  if layout == "horizontal" then
+    return "right"
+  elseif layout == "vertical" then
+    return "down"
+  end
+    return layout or "right"
+end
 
 --Creates the parent frame
 local function CreateMainFrame()
@@ -61,11 +70,15 @@ local function CreateMainFrame()
   Blizzkili.frame = frame
 end
 
-local function GetValueForOrientation(layout, horizontalValue, verticalValue)
-  if layout == "horizontal" then
-    return horizontalValue
+local function GetValueForOrientation(layout, rightValue, leftValue, downValue, upValue)
+  if layout == "right" then
+    return rightValue
+  elseif layout == "left" then
+    return leftValue
+  elseif layout == "down" then
+    return downValue
   else
-    return verticalValue
+    return upValue
   end
 end
 
@@ -86,8 +99,7 @@ local function CreateButtons()
   local buttonHeight = buttonSize
   local buttonWidth = buttonSize
   local buttonSpacing = profile.buttons.buttonSpacing or 5
-  local layout = profile.buttons.layout or "horizontal"
-
+  local layout = validateLayout(profile.buttons.layout)
   numButtons = numButtons - 1 -- account for main button
 
   --create first button
@@ -97,10 +109,10 @@ local function CreateButtons()
     "SecureActionButtonTemplate",
     buttonHeight * mainScale,
     buttonWidth * mainScale,
-    GetValueForOrientation(layout, FRAME_PADDING, 0),
-    GetValueForOrientation(layout, 0, -1 * FRAME_PADDING),
-    GetValueForOrientation(layout, "LEFT", "TOP"),
-    GetValueForOrientation(layout, "LEFT", "TOP")
+    GetValueForOrientation(layout, FRAME_PADDING, -1 * FRAME_PADDING, 0, 0),
+    GetValueForOrientation(layout, 0, 0, -1 * FRAME_PADDING, FRAME_PADDING),
+    GetValueForOrientation(layout, "LEFT", "RIGHT", "TOP", "BOTTOM"),
+    GetValueForOrientation(layout, "LEFT", "RIGHT", "TOP", "BOTTOM")
   )
   ButtonLib.CreateGlow(mainButton, profile)
 
@@ -116,10 +128,10 @@ local function CreateButtons()
       "SecureActionButtonTemplate",
       buttonHeight,
       buttonWidth,
-      GetValueForOrientation(layout, buttonSpacing, 0),
-      GetValueForOrientation(layout, 0, -1 * buttonSpacing),
-      GetValueForOrientation(layout, "LEFT", "TOP"),
-      GetValueForOrientation(layout, "RIGHT", "BOTTOM")
+      GetValueForOrientation(layout, buttonSpacing, -1 * buttonSpacing, 0, 0),
+      GetValueForOrientation(layout, 0, 0, -1 * buttonSpacing, buttonSpacing),
+      GetValueForOrientation(layout, "LEFT", "RIGHT", "TOP", "BOTTOM"),
+      GetValueForOrientation(layout, "RIGHT", "LEFT", "BOTTOM", "TOP")
     )
     ButtonLib.CreateKeybind(button, 1, profile.keybind)
     -- ButtonLib.CreateStacks(button, 1, profile.stacks)
@@ -155,11 +167,16 @@ function UILib.UpdateFrameSize()
   local buttonHeight = buttonSize
   local buttonWidth = buttonSize
   local buttonSpacing = profile.buttons.buttonSpacing or 5
-  local layout = profile.buttons.layout or "horizontal"
+  local layout = validateLayout(profile.buttons.layout)
   local numButtons = profile.buttons.numButtons or 5
-
-  local totalWidth = buttonWidth * mainScale + (layout == "horizontal" and (buttonSize + buttonSpacing) * (numButtons-1) or 0)
-  local totalHeight = buttonHeight * mainScale + (layout == "vertical" and (buttonSize + buttonSpacing) * (numButtons-1) or 0)
+  local additionalWidth, additionalHeight = 0, 0
+  if layout == "right" or layout == "left" then
+    additionalWidth = (buttonSize + buttonSpacing) * (numButtons-1)
+  elseif layout == "down" or layout == "up" then
+    additionalHeight = (buttonSize + buttonSpacing) * (numButtons-1)
+  end
+  local totalWidth = buttonWidth * mainScale + additionalWidth
+  local totalHeight = buttonHeight * mainScale + additionalHeight
   if not BlizzardAPI:InCombat() then
     Blizzkili.frame:SetSize(totalWidth+ FRAME_PADDING*2, totalHeight + FRAME_PADDING*2) -- add some padding
   end
@@ -218,15 +235,15 @@ function UILib.UpdateButtons()
       --update padding
       if not BlizzardAPI:InCombat() then
         local buttonSpacing = profile.buttons.buttonSpacing or 5
-        local layout = profile.buttons.layout or "horizontal"
-        local anchorPoint = GetValueForOrientation(layout, "LEFT", "TOP")
-        local parentAnchor = GetValueForOrientation(layout, "RIGHT", "BOTTOM")
-        local xPadding = GetValueForOrientation(layout, buttonSpacing, 0)
-        local yPadding = GetValueForOrientation(layout, 0, -1 * buttonSpacing)
+        local layout = validateLayout(profile.buttons.layout)
+        local anchorPoint = GetValueForOrientation(layout, "LEFT", "RIGHT", "TOP", "BOTTOM")
+        local parentAnchor = GetValueForOrientation(layout, "RIGHT", "LEFT", "BOTTOM", "TOP")
+        local xPadding = GetValueForOrientation(layout, buttonSpacing, -1 * buttonSpacing, 0, 0)
+        local yPadding = GetValueForOrientation(layout, 0, 0, -1 * buttonSpacing, buttonSpacing)
         if i == 1 then
-          parentAnchor = GetValueForOrientation(layout, "LEFT", "TOP")
-          xPadding = GetValueForOrientation(layout, FRAME_PADDING, 0)
-          yPadding = GetValueForOrientation(layout, 0, -1 * FRAME_PADDING)
+          parentAnchor = GetValueForOrientation(layout, "LEFT", "RIGHT", "TOP", "BOTTOM")
+          xPadding = GetValueForOrientation(layout, FRAME_PADDING, -1 * FRAME_PADDING, 0, 0)
+          yPadding = GetValueForOrientation(layout, 0, 0, -1 * FRAME_PADDING, FRAME_PADDING)
         end
           button:ClearAllPoints()
           button:SetPoint(anchorPoint, button:GetParent(), parentAnchor, xPadding, yPadding)

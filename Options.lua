@@ -23,6 +23,28 @@ local function fontValues()
     return values
 end
 
+local function orderedLayoutValues()
+    local layouts = {
+        [1] = "Right",
+        [2] = "Left",
+        [3] = "Up",
+        [4] = "Down",
+    }
+    return layouts
+end
+
+local function convertLayoutToKey(index)
+    return orderedLayoutValues()[index]:lower() or "right"
+end
+local function convertLayoutToIndex(layoutKey)
+    local layoutKeys = {
+        right = 1,
+        left = 2,
+        up = 3,
+        down = 4,
+    }
+    return layoutKeys[layoutKey] or 1
+end
 function Options:SetupOptions()
     -- Create the options table
     local options = {
@@ -137,17 +159,14 @@ function Options:SetupOptions()
                         end,
                     },
                     layout = {
-                        name = "Layout",
-                        desc = "Horizontal or Vertical arrangement",
+                        name = "Growth Direction",
+                        desc = "Direction to grow the buttons",
                         type = "select",
-                        values = {
-                            horizontal = "Horizontal",
-                            vertical = "Vertical",
-                        },
+                        values = orderedLayoutValues(),
                         order = 4,
-                        get = function() return Blizzkili.db.profile.buttons.layout end,
-                        set = function(_, value)
-                            Blizzkili.db.profile.buttons.layout = value
+                        get = function() return convertLayoutToIndex(Blizzkili.db.profile.buttons.layout) end,
+                        set = function(key, value)
+                            Blizzkili.db.profile.buttons.layout = convertLayoutToKey(value)
                             UILib.UpdateButtons()
                         end,
                     },
@@ -178,7 +197,7 @@ function Options:SetupOptions()
                             [0] = "None",
                             [1] = "Gold",
                             [2] = "Assisted Blue",
-                            [3] = "Custom Color", --always last make sure to update when you select a custom color
+                            [100] = "Custom Color", --always last make sure to update when you select a custom color
                         },
                         get = function() return Blizzkili.db.profile.display.glowMain end,
                         set = function(_, value)

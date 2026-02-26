@@ -9,6 +9,7 @@ local Debug = LibStub("Blizzkili-Debug")
 local error = function(msg) Debug.Error(Blizzkili.db.profile, msg) end
 local info= function(msg) Debug.Info(Blizzkili.db.profile, msg) end
 local trace= function(msg) Debug.Trace(Blizzkili.db.profile, msg) end
+
 -- Create a button with specified parameters
 function ButtonLib.CreateButton(name, parent, template, height, width, xpadding, ypadding, parentAnchor, anchorPoint)
   trace("Creating button " .. name)

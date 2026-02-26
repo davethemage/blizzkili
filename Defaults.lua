@@ -32,7 +32,7 @@ Blizzkili.defaults = {
             numButtons = 3,
             buttonSize = 40,
             buttonSpacing = 5,
-            layout = "horizontal", -- or "vertical"
+            layout = "right",
             zoom = true,
         },
         display = {

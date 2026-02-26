@@ -43,7 +43,7 @@ A rotation helper addon for World of Warcraft 12.0.0 (Midnight Patch) based on H
 - **Main Button Scale** - Scale the main button by a percentage
 - **Button Size** - Base button size in pixels (1-150)
 - **Button Spacing** - Space between buttons (0-20)
-- **Layout** - Horizontal or Vertical arrangement
+- **Layout** - Growth Direction
 - **Zoom Button Textures** - Removes the border from the button textures(square)
 
 ### Display Settings
