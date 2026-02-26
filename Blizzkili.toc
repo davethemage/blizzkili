@@ -1,6 +1,6 @@
 ## Interface: 120000
 ## Title: Blizzkili - Rotation Helper
-## Version: 1.0.1
+## Version: 1.0.2
 ## Author: Davethemage
 ## Notes: A rotation helper addon similar to Hekili, using Single Button Assistant as rotation reference
 ## IconTexture: Interface\AddOns\Blizzkili\media\icon.tga

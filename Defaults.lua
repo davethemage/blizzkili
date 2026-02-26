@@ -9,7 +9,7 @@ local Blizzkili = LibStub("AceAddon-3.0"):NewAddon(
 )
 addon.shortName = "BK"
 addon.longName = "Blizzkili"
-addon.version = "1.0.1" --keep in sync with toc and README
+addon.version = "1.0.2" --keep in sync with toc and README
 
 -- Default configuration values
 Blizzkili.defaults = {

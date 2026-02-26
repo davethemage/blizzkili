@@ -4,7 +4,6 @@
 local addonName, addon = ...
 local AceConfig = LibStub("AceConfig-3.0")
 local AceConfigDialog = LibStub("AceConfigDialog-3.0")
-local AceConfigRegistry = LibStub("AceConfigRegistry-3.0")
 local UILib = LibStub("Blizzkili-UILib")
 local LSM = LibStub("LibSharedMedia-3.0")
 local Options = LibStub:NewLibrary("Blizzkili-Options", 1)
@@ -474,6 +473,7 @@ function Options:SetupOptions()
                     },
                 },
             },
+            profiles = LibStub("AceDBOptions-3.0"):GetOptionsTable(Blizzkili.db),
         },
     }
 
