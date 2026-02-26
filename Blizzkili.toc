@@ -1,0 +1,28 @@
+## Interface: 120000
+## Title: Blizzkili - Rotation Helper
+## Version: 1.0.0
+## Author: Davethemage
+## Notes: A rotation helper addon similar to Hekili, using Single Button Assistant as rotation reference
+## IconTexture: Interface\AddOns\Blizzkili\media\icon.tga
+## SavedVariables: BlizzkiliDB
+
+# EmbededDeps: Ace3, LibSharedMedia-3.0
+Libs\Ace3\LibStub\LibStub.lua
+Libs\Ace3\CallbackHandler-1.0\CallbackHandler-1.0.xml
+Libs\Ace3\AceAddon-3.0\AceAddon-3.0.xml
+Libs\Ace3\AceEvent-3.0\AceEvent-3.0.xml
+Libs\Ace3\AceDB-3.0\AceDB-3.0.xml
+Libs\Ace3\AceDBOptions-3.0\AceDBOptions-3.0.xml
+Libs\Ace3\AceLocale-3.0\AceLocale-3.0.xml
+Libs\Ace3\AceConsole-3.0\AceConsole-3.0.xml
+Libs\Ace3\AceGUI-3.0\AceGUI-3.0.xml
+Libs\Ace3\AceConfig-3.0\AceConfig-3.0.xml
+Libs\LibSharedMedia-3.0\LibSharedMedia-3.0\LibSharedMedia-3.0.lua
+
+# Addon files
+Defaults.lua
+BlizzardAPI.lua
+ActionBarScanner.lua
+UI/ui.xml
+Options.lua
+Core.lua

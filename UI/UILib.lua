@@ -1,0 +1,229 @@
+-- local LSM = LibStub("LibSharedMedia-3.0")
+local UILib = LibStub:NewLibrary("Blizzkili-UILib", 1)
+local Blizzkili = LibStub("AceAddon-3.0"):GetAddon("Blizzkili", true)
+local ButtonLib = LibStub("Blizzkili-ButtonLib")
+local BlizzardAPI = LibStub("Blizzkili-BlizzardAPI")
+
+local FRAME_PADDING = 10
+
+--Creates the parent frame
+local function CreateMainFrame()
+  local frame = CreateFrame("Frame", "BlizzkiliFrame", UIParent, "BackdropTemplate")
+  frame:SetSize(200, 200)
+  frame:SetPoint("CENTER", UIParent, "CENTER", 0, 0)
+  frame:SetMovable(true)
+  frame:SetUserPlaced(true)
+  frame:SetBackdrop({
+    bgFile = "Interface\\Tooltips\\UI-Tooltip-Background",
+    edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
+    tile = true,
+    tileSize = 16,
+    edgeSize = 16,
+    insets = { left = 0, right = 0, top = 0, bottom = 0 }
+  })
+  frame:SetBackdropColor(0, 0, 0, 0.7)
+  frame:SetBackdropBorderColor(1, 1, 1, 0)
+  -- Register frame events
+  frame:SetScript("OnMouseDown", function(self)
+    if not self.isMoving and not Blizzkili.db.profile.lockFrames then
+      self:StartMoving()
+      self.isMoving = true
+    end
+  end)
+
+  frame:SetScript("OnMouseUp", function(self)
+    if self.isMoving then
+      self:StopMovingOrSizing()
+      self.isMoving = false
+
+      -- Save new position
+      local x, y = self:GetCenter()
+      local parent = self:GetParent()
+      if parent then
+        local parentWidth = parent:GetWidth()
+        local parentHeight = parent:GetHeight()
+        Blizzkili.db.profile.position.x = x - parentWidth / 2
+        Blizzkili.db.profile.position.y = y - parentHeight / 2
+      end
+    end
+  end)
+
+  frame:SetScript("OnHide", function(self)
+    if self.isMoving then
+      self:StopMovingOrSizing()
+      self.isMoving = false
+    end
+  end)
+
+  Blizzkili.frame = frame
+end
+
+local function GetValueForOrientation(layout, horizontalValue, verticalValue)
+  if layout == "horizontal" then
+    return horizontalValue
+  else
+    return verticalValue
+  end
+end
+
+local function CreateButtons()
+  if Blizzkili.buttons then
+    for _, button in ipairs(Blizzkili.buttons) do
+      button:Hide()
+      button:SetParent(nil)
+    end
+  end
+  Blizzkili.buttons = {}
+  local profile = Blizzkili.db.profile
+  local mainScale = profile.mainScale or 1.2
+  local numButtons = 10 --Alaways create 10 buttons and hide unused ones. This is to prevent taint issues with secure buttons being created/destroyed during combat.
+  local buttonSize = profile.buttons.buttonSize or 40
+  local buttonHeight = buttonSize
+  local buttonWidth = buttonSize
+  local buttonSpacing = profile.buttons.buttonSpacing or 5
+  local layout = profile.buttons.layout or "horizontal"
+
+  numButtons = numButtons - 1 -- account for main button
+
+  --create first button
+  local mainButton = ButtonLib.CreateButton(
+    "BlizzkiliMainButton",
+    Blizzkili.frame,
+    "SecureActionButtonTemplate",
+    buttonHeight * mainScale,
+    buttonWidth * mainScale,
+    GetValueForOrientation(layout, FRAME_PADDING, 0),
+    GetValueForOrientation(layout, 0, -1 * FRAME_PADDING),
+    GetValueForOrientation(layout, "LEFT", "TOP"),
+    GetValueForOrientation(layout, "LEFT", "TOP")
+  )
+  ButtonLib.CreateGlow(mainButton, profile)
+
+  ButtonLib.CreateKeybind(mainButton, mainScale, profile.keybind)
+  ButtonLib.CreateStacks(mainButton, mainScale, profile.stacks)
+
+  mainButton:Show()
+  Blizzkili.buttons[1] = mainButton
+  for i = 1, numButtons do
+    local button = ButtonLib.CreateButton(
+      "BlizzkiliButton" .. i,
+       Blizzkili.buttons[i], -- parent is previous button for easy layout
+      "SecureActionButtonTemplate",
+      buttonHeight,
+      buttonWidth,
+      GetValueForOrientation(layout, buttonSpacing, 0),
+      GetValueForOrientation(layout, 0, -1 * buttonSpacing),
+      GetValueForOrientation(layout, "LEFT", "TOP"),
+      GetValueForOrientation(layout, "RIGHT", "BOTTOM")
+    )
+    ButtonLib.CreateKeybind(button, 1, profile.keybind)
+    ButtonLib.CreateStacks(button, 1, profile.stacks)
+    if i <= profile.buttons.numButtons then
+      button:Show()
+    else
+      button:Hide()
+    end
+    Blizzkili.buttons[i + 1] = button
+  end
+end
+
+function UILib.UpdateFramePosition()
+  if not Blizzkili.frame or BlizzardAPI:InCombat() then return end
+local profile = Blizzkili.db.profile
+  Blizzkili.frame:SetPoint(profile.position.anchorPoint or "CENTER", UIParent, profile.position.parentAnchor or "CENTER", profile.position.x or 0, profile.position.y or 0)
+  -- Blizzkili.frame:SetScale(Blizzkili.db.profile.scale)
+  -- Blizzkili.frame:SetAlpha(Blizzkili.db.profile.alpha)
+end
+
+function UILib.UpdateFrameSize()
+  if not Blizzkili.frame then return end
+  local profile = Blizzkili.db.profile
+  local mainScale = profile.mainScale or 1.2
+  local buttonSize = profile.buttons.buttonSize or 40
+  local buttonHeight = buttonSize
+  local buttonWidth = buttonSize
+  local buttonSpacing = profile.buttons.buttonSpacing or 5
+  local layout = profile.buttons.layout or "horizontal"
+  local numButtons = profile.buttons.numButtons or 5
+
+  local totalWidth = buttonWidth * mainScale + (layout == "horizontal" and (buttonSize + buttonSpacing) * (numButtons-1) or 0)
+  local totalHeight = buttonHeight * mainScale + (layout == "vertical" and (buttonSize + buttonSpacing) * (numButtons-1) or 0)
+  if not BlizzardAPI:InCombat() then
+    Blizzkili.frame:SetSize(totalWidth+ FRAME_PADDING*2, totalHeight + FRAME_PADDING*2) -- add some padding
+  end
+end
+
+function UILib.CreateUI()
+  -- Create the main frame
+  CreateMainFrame()
+
+  -- Create buttons and text
+  CreateButtons()
+
+  -- Set up the frame
+  UILib.UpdateFramePosition()
+  UILib.UpdateButtons()
+end
+
+function UILib.UpdateButtons()
+  local profile = Blizzkili.db.profile
+  for i = 1, #Blizzkili.buttons do
+    local button = Blizzkili.buttons[i]
+    if button then
+      if not BlizzardAPI:InCombat() then
+        if i <= profile.buttons.numButtons then
+          button:Show()
+        else
+          button:Hide()
+        end
+      end
+      --update button size
+      local buttonSize = profile.buttons.buttonSize or 40
+      local mainScale = profile.mainScale or 1.2
+      local buttonHeight = buttonSize
+      local buttonWidth = buttonSize
+      if i == 1 then
+        if not BlizzardAPI:InCombat() then
+          button:SetSize(buttonWidth * mainScale, buttonHeight * mainScale)
+        end
+        --update keybind
+        ButtonLib.UpdateKeybind(button, mainScale, profile.keybind)
+        ButtonLib.CreateGlow(button, profile)
+         --update stacks
+        if profile.display.glowMain ~= 0 then
+          button.glow:Show()
+        else
+          button.glow:Hide()
+        end
+      else
+        if not BlizzardAPI:InCombat() then
+          button:SetSize(buttonWidth, buttonHeight)
+        end
+        ButtonLib.UpdateKeybind(button, 1, profile.keybind)
+      end
+      --update padding
+      if not BlizzardAPI:InCombat() then
+        local buttonSpacing = profile.buttons.buttonSpacing or 5
+        local layout = profile.buttons.layout or "horizontal"
+        local anchorPoint = GetValueForOrientation(layout, "LEFT", "TOP")
+        local parentAnchor = GetValueForOrientation(layout, "RIGHT", "BOTTOM")
+        local xPadding = GetValueForOrientation(layout, buttonSpacing, 0)
+        local yPadding = GetValueForOrientation(layout, 0, -1 * buttonSpacing)
+        if i == 1 then
+          parentAnchor = GetValueForOrientation(layout, "LEFT", "TOP")
+          xPadding = GetValueForOrientation(layout, FRAME_PADDING, 0)
+          yPadding = GetValueForOrientation(layout, 0, -1 * FRAME_PADDING)
+        end
+          button:ClearAllPoints()
+          button:SetPoint(anchorPoint, button:GetParent(), parentAnchor, xPadding, yPadding)
+        -- update zoom
+        if profile.buttons.zoom then
+          ButtonLib.ZoomButtonTexture(button, 0.08)
+        else
+          ButtonLib.ZoomButtonTexture(button, 0)
+        end
+      end
+    end
+  end
+  UILib.UpdateFrameSize()
+end
