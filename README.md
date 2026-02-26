@@ -81,7 +81,6 @@ A rotation helper addon for World of Warcraft 12.0.0 (Midnight Patch) based on H
 
 ## TODO/Future Plans
 
-- Fix options registration(Show in the addon Menu)
 - Keybind overrides
 - Organize Menu
 - Border Configuration
