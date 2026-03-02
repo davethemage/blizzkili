@@ -57,7 +57,9 @@ local function convertLayoutToIndex(layoutKey)
 end
 
 function Options:SetupOptions()
-    local keybindOverrideSpellId = nil
+    local keybindOverrideSpellId= nil
+    local blacklistSpellId = nil
+    local blacklistReason = 100
     local keybindOverrideKeybind = ""
     local options = nil
 
@@ -125,7 +127,61 @@ function Options:SetupOptions()
             }
         end
     end
+    -- Function to updeate Blacklist Options
+    local function updateBlacklistOptions()
+        if not options or not options.args.blacklist or not options.args.blacklist.args.blacklistList then return end
+        options.args.blacklist.args.blacklistList.args = {}
 
+        -- Iterate over the blacklist  table and create options for each spellID
+        for spellID, _ in pairs(Blizzkili.db.profile.blacklistSpells) do
+            -- Add a new option for each spellID
+            -- add remove button
+            local spellInfo = BlizzardAPI.GetSpellInfo(spellID)
+            local spellIcon = spellInfo and spellInfo.iconID or ""
+            local spellName = spellInfo and spellInfo.name or "N/A"
+            options.args.blacklist.args.blacklistList.args[tostring(spellID)] = {
+                type = "group",
+                name = "|T" .. spellIcon .. ":16:16:0:0|t" .. spellName .. " (" .. spellID .. ")",
+                order = spellID,
+                inline = true,
+                args = {
+                    ["remove_" .. spellID] = {
+                    type = "execute",
+                    name = "Delete",
+                    desc = "Remove this Blacklist Spell",
+                    width = sm_element,
+                    order = 1,
+                    func = function()
+                        -- Remove the keybind for this spellID
+                        Blizzkili.db.profile.blacklistSpells[spellID] = nil
+                        -- Update Rotation
+                        Blizzkili:UpdateRotation()
+                        updateBlacklistOptions()
+                        -- Refresh the options window
+                        refreshLayout()
+                    end,
+                    },
+                    -- ["blacklistReason_" .. spellID] = {
+                    --     type = "select",
+                    --     name = "Blacklist Reason",
+                    --     desc = "Reason to blacklist this spellID",
+                    --     width = lg_element,
+                    --     order = 2,
+                    --     values = function() return Blizzkili.overrideReasons end,
+                    --     get = function() return Blizzkili.db.profile.blacklistSpells[spellID] or 100 end,
+                    --     set = function(_, value)
+                    --         Blizzkili.db.profile.blacklistSpells[spellID] = value
+                    --         -- Update Rotation
+                    --         Blizzkili:UpdateRotation()
+                    --         updateBlacklistOptions()
+                    --         -- Refresh the options window
+                    --         refreshLayout()
+                    --     end,
+                    -- },
+                }
+            }
+        end
+    end
     -- Create the options table
     options = {
         name = "Blizzkili",
@@ -624,7 +680,7 @@ function Options:SetupOptions()
                         desc = "Show keybind override for this spell ID",
                         type = "input",
                         order = 12,
-                        width = xs_element,
+                        width = sm_element,
                         get = function() return tostring(keybindOverrideSpellId or "") end,
                         set = function(_, value)
                             keybindOverrideSpellId = tonumber(value) or 0
@@ -635,7 +691,7 @@ function Options:SetupOptions()
                         desc = "Keybind to show when override spell is shown",
                         type = "input",
                         order = 13,
-                        width = xs_element,
+                        width = sm_element,
                         get = function() return keybindOverrideKeybind end,
                         set = function(_, value)
                             keybindOverrideKeybind = value
@@ -646,7 +702,7 @@ function Options:SetupOptions()
                         desc = "Save the current override binding",
                         type = "execute",
                         order = 14,
-                        width = sm_element,
+                        width = 0.4,
                         func = function()
                             if keybindOverrideSpellId and keybindOverrideSpellId > 0 and keybindOverrideKeybind ~= "" then
                                 Blizzkili.db.profile.keybindOverrides[keybindOverrideSpellId] = keybindOverrideKeybind
@@ -663,6 +719,91 @@ function Options:SetupOptions()
                     },
                     keybindOverrideList = {
                         name = "Current Overrides",
+                        type = "group",
+                        order = 20,
+                        inline = true,
+                        args = {}
+                    },
+                },
+            },
+            blacklist =
+            {
+                name = "Blacklist",
+                type = "group",
+                order = 6,
+                args = {
+                    blacklistHeader = {
+                        name = "Spell Blacklist Options",
+                        type = "header",
+                        order = 0,
+                    },
+                    blacklistDesc = {
+                        name = "These options allow you to add spells to a blacklist.",
+                        type = "description",
+                        order = 1,
+                    },
+                    blacklistEnabled = {
+                        name = "Enable Spell Blacklist",
+                        desc = "Enable spell blacklist",
+                        type = "toggle",
+                        order = 3,
+                        width = xl_element,
+                        get = function() return Blizzkili.db.profile.blacklistEnabled end,
+                        set = function(_, value)
+                            Blizzkili.db.profile.blacklistEnabled = value
+                            -- Update Rotation
+                            Blizzkili:UpdateRotation()
+                        end,
+                    },
+                    blacklistAddHeader = {
+                        name = "Add Blacklist Spell",
+                        type = "header",
+                        order = 10,
+                    },
+                    blacklistSpellIDInput =
+                    {
+                        name = "Spell ID",
+                        desc = "Show keybind override for this spell ID",
+                        type = "input",
+                        order = 12,
+                        width = sm_element,
+                        get = function() return tostring(blacklistSpellId or "") end,
+                        set = function(_, value)
+                            blacklistSpellId = tonumber(value) or 0
+                        end,
+                    },
+                    -- blacklistReasonSelect = {
+                    --     name = "Blacklist Reason",
+                    --     type = "select",
+                    --     order = 11,
+                    --     width = med_element,
+                    --     values = function() return Blizzkili.overrideReasons end,
+                    --     get = function() return blacklistReason end,
+                    --     set = function(_, value)
+                    --         blacklistReason = value
+                    --     end,
+                    -- },
+                    blacklistSave = {
+                        name = "Save",
+                        desc = "Save blacklist Spell",
+                        type = "execute",
+                        order = 14,
+                        width = sm_element,
+                        func = function()
+                            if blacklistSpellId and blacklistSpellId > 0 then
+                                Blizzkili.db.profile.blacklistSpells[blacklistSpellId] = blacklistReason or 100
+                                blacklistSpellId = nil
+                                blacklistReason = 100
+                                -- Update Rotation
+                                Blizzkili:UpdateRotation()
+                                updateBlacklistOptions()
+                            else
+                                error("Please enter a valid spell ID")
+                            end
+                        end,
+                    },
+                    blacklistList = {
+                        name = "Current Blacklist",
                         type = "group",
                         order = 20,
                         inline = true,
@@ -736,6 +877,7 @@ function Options:SetupOptions()
             profiles = LibStub("AceDBOptions-3.0"):GetOptionsTable(Blizzkili.db),
         },
     }
+    updateBlacklistOptions()
     updateKeybindOverridesOptions()
     -- Register the options
     AceConfig:RegisterOptionsTable(addon.longName, options)

@@ -12,6 +12,7 @@ local BlizzardAPI = LibStub("Blizzkili-BlizzardAPI")
 local ActionBarScanner = LibStub("Blizzkili-ActionBarScanner")
 local ButtonLib = LibStub("Blizzkili-ButtonLib")
 local Options = LibStub("Blizzkili-Options")
+local Rotation = LibStub("Blizzkili-Rotation")
 local Debug = LibStub("Blizzkili-Debug")
 local error = function(msg) Debug.Error(Blizzkili.db.profile, msg) end
 local info = function(msg) Debug.Info(Blizzkili.db.profile, msg) end
@@ -145,7 +146,7 @@ function Blizzkili:UpdateRotation()
     trace("Updating rotation display") --debug
 
     -- Get the current rotation information
-    local rotationSpells = BlizzardAPI.GetAssistedCombatRotation()
+    local rotationSpells = Rotation.GetRotation()
 
     -- TODO add prioritySpell(Cooldowns) Requires tracking cooldowns manually since we can't use IsSpellOnCooldown in combat due to secret values.
     -- local prioritySpell= 442204

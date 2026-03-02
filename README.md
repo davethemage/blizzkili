@@ -76,7 +76,7 @@ A rotation helper addon for World of Warcraft 12.0.0 (Midnight Patch) based on H
 
 ## Version
 
-- Current: 1.0.3
+- Current: 1.0.4
 - WoW Patch: 12.0.0 (Midnight)
 
 ## TODO/Future Plans
