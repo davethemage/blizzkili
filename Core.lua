@@ -143,6 +143,7 @@ end
 
 -- Update the rotation display
 function Blizzkili:UpdateRotation()
+    self:ApplyVisibility()
     -- This implements the Single Button Assistant rotation logic
     if not self.buttons then
         error("No buttons found, cannot update rotation")
