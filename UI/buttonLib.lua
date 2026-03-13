@@ -10,12 +10,67 @@ local error = function(msg) Debug.Error(Blizzkili.db.profile, msg) end
 local info= function(msg) Debug.Info(Blizzkili.db.profile, msg) end
 local trace= function(msg) Debug.Trace(Blizzkili.db.profile, msg) end
 
+local function UpdateButtonCooldowns(button)
+  if not button then return end
+  if not button.spellId then
+    --clear cooldown
+    if button.cooldown then button.cooldown:Clear() end
+    error("No Spell id for button: " .. button:GetName())
+  end
+  -- use C_Spell instead of BlizzardAPI library. We will not be doing any computation with secret values
+  local spellId = button.spellId
+  local cooldownInfo = C_Spell.GetSpellCooldown and C_Spell.GetSpellCooldown(spellId)
+  if not Blizzkili.db.profile.buttons.cdSwipe then
+    button.cooldown:SetDrawSwipe(false)
+    button.cooldown:Hide()
+    button.cooldown:Clear()
+    button._cooldownShown = false
+  elseif button.cooldown and cooldownInfo then
+    local startTime = cooldownInfo.startTime or 0
+    local duration = cooldownInfo.duration or 0
+    local modRate = cooldownInfo.modRate or 1
+
+    -- Because Cooldowns values are secret, we hand off everything to the cooldown frame
+    if not button._cooldownShown and Blizzkili.db.profile.buttons.cdSwipe then
+      button.cooldown:SetDrawSwipe(true)
+      button.cooldown:Show()
+      button._cooldownShown = true
+    end
+
+    button.cooldown:SetCooldown(startTime, duration, modRate)
+  elseif button.cooldown then
+    -- No cooldown info, clear it
+    if button._cooldownShown then
+      button.cooldown:Clear()
+      button._cooldownShown = false
+    end
+  end
+end
+
+local function CreateCooldown(button)
+  local cooldown = CreateFrame("Cooldown", button:GetName() .. "_Cooldown", button, "CooldownFrameTemplate")
+  cooldown:SetPoint("TOPLEFT", button, "TOPLEFT", 0, -0)
+  cooldown:SetPoint("BOTTOMRIGHT", button, "BOTTOMRIGHT", 0, 0)
+  cooldown:SetDrawEdge(false)
+  cooldown:SetDrawSwipe(true)
+  cooldown:SetReverse(false)
+  cooldown:SetSwipeColor(0, 0, 0, 0.6)
+
+  --todo cooldown text
+
+  -- Clear cooldown and hide
+  cooldown:Clear()
+  cooldown:Hide()
+  button.cooldown = cooldown
+end
+
 -- Create a button with specified parameters
 function ButtonLib.CreateButton(name, parent, template, height, width, xpadding, ypadding, parentAnchor, anchorPoint)
   trace("Creating button " .. name)
   local button = CreateFrame("Button", name, parent, template)
   button:SetSize(width, height)
   button:SetPoint(anchorPoint, parent, parentAnchor, xpadding, ypadding)
+  CreateCooldown(button)
   return button
 end
 
@@ -158,6 +213,7 @@ function ButtonLib.UpdateButton(button, spellId, profile)
         local keybind = ActionBarScanner:GetSpellKeybindsForId(spellId, true)
         ButtonLib.SetKeybindText(button, tostring(keybind)) -- Update keybind text
         button:SetNormalTexture(spellTexture)
+        UpdateButtonCooldowns(button)
         -- update zoom
         if profile.buttons.zoom then
           ButtonLib.ZoomButtonTexture(button, 0.08)

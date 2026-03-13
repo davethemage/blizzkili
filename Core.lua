@@ -174,6 +174,7 @@ function Blizzkili:UpdateRotation()
 end
 
 function Blizzkili:ApplyVisibility()
+    if BlizzardAPI.InCombat() then return end
     local frame = Blizzkili.frame
     UnregisterStateDriver(frame, "visibility")
 

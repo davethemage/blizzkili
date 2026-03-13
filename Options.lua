@@ -252,6 +252,18 @@ function Options:SetupOptions()
                             UILib.UpdateButtons()
                         end,
                     },
+                    showSwipe = {
+                        name = "Show CD/GCD swipe",
+                        desc = "Show the swipe overlay for Cooldowns or GCD",
+                        type = "toggle",
+                        order = 20,
+                        width = med_element,
+                        get = function() return Blizzkili.db.profile.buttons.cdSwipe end,
+                        set = function(_, value)
+                            Blizzkili.db.profile.buttons.cdSwipe = value
+                            UILib.UpdateButtons()
+                        end,
+                    },
                 },
             },
             display = {
@@ -328,7 +340,7 @@ function Options:SetupOptions()
                         desc = "Display the addon when out of combat",
                         type = "toggle",
                         order = 4,
-                        width = med_element,
+                        width = lg_element,
                         get = function() return Blizzkili.db.profile.display.showOOC end,
                         set = function(_, value)
                             Blizzkili.db.profile.display.showOOC = value
@@ -880,6 +892,7 @@ function Options:SetupOptions()
                         get = function() return Blizzkili.db.profile.outOfCombatUpdateRate or 1 end,
                         set = function(_, value)
                             Blizzkili.db.profile.outOfCombatUpdateRate = value
+                            Blizzkili:OutOfCombat()
                         end
                     },
                     keybindUpdateRate ={

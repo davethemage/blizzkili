@@ -38,6 +38,7 @@ Blizzkili.defaults = {
             buttonSpacing = 5,
             layout = "right",
             zoom = true,
+            cdSwipe = true,
         },
         display = {
             showOOC = true,
