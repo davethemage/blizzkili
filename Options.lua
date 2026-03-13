@@ -286,6 +286,18 @@ function Options:SetupOptions()
                             Blizzkili:UpdateFrameLock()
                         end,
                     },
+                    showLockBox = {
+                        name = "Show Move Frame",
+                        desc = "Show the frame for moving Blizzkili",
+                        type = "toggle",
+                        order = 60,
+                        width = med_element,
+                        get = function() return Blizzkili.db.profile.showMoveBox end,
+                        set = function(_, value)
+                            Blizzkili.db.profile.showMoveBox = value
+                            Blizzkili:UpdateFrameLock()
+                        end,
+                    },
                     layout = {
                         name = "Growth Direction",
                         desc = "Direction to grow the buttons",

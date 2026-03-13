@@ -131,7 +131,11 @@ function Blizzkili:UpdateFrameLock()
         info("Unlocking frames")
         self.frame:EnableMouse(true)
         self.frame:SetMovable(true)
-        self.frame:SetBackdropColor(0, 0, 0, 0.7)
+        local alpha = 0
+        if self.db.profile.showMoveBox then
+            alpha = 0.7
+        end
+        self.frame:SetBackdropColor(0, 0, 0, alpha)
 
     end
 end

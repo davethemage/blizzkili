@@ -25,6 +25,7 @@ Blizzkili.defaults = {
         keybindUpdateRate = 30,
         keybindOverrideEnabled = true,
         blacklistEnabled = true,
+        showMoveBox = true,
         position = {
             x = 0,
             y = 0,
@@ -106,6 +107,7 @@ Blizzkili.defaults = {
             [1459] = 2,    -- Arcane Intellect (Mage)
             [264760] = 2,  -- Arcane Intellect (alternate)
             [381732] = 2,  -- Blessing of the Bronze (Evoker)
+            [364342] = 2,  -- Blessing of the Bronze (alternate)
             -- Druid Forms
             [768] = 3,     -- Cat Form
             [5487] = 3,    -- Bear Form
