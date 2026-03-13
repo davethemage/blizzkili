@@ -323,6 +323,18 @@ function Options:SetupOptions()
                             UILib.UpdateButtons()
                         end,
                     },
+                    showOutOfCombat = {
+                        name = "Show Out of Combat",
+                        desc = "Display the addon when out of combat",
+                        type = "toggle",
+                        order = 4,
+                        width = med_element,
+                        get = function() return Blizzkili.db.profile.display.showOOC end,
+                        set = function(_, value)
+                            Blizzkili.db.profile.display.showOOC = value
+                            Blizzkili:UpdateButtons()
+                        end,
+                    },
             --     scale = {
             --         name = "Scale",
             --         desc = "Overall frame scale",

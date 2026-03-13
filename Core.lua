@@ -72,6 +72,7 @@ function Blizzkili:PlayerEnteringWorld()
         UILib.CreateUI()
         self.isInitialized = true
     end
+    self:ApplyVisibility()
     UILib.UpdateButtons()
     -- Lock or unlock the frame
     self:UpdateFrameLock()
@@ -168,6 +169,17 @@ function Blizzkili:UpdateRotation()
         elseif not BlizzardAPI:InCombat() then
             button:Hide()  -- Hide unused buttons when not in combat
         end
+    end
+end
+
+function Blizzkili:ApplyVisibility()
+    local frame = Blizzkili.frame
+    UnregisterStateDriver(frame, "visibility")
+
+    if self.db.profile.display.showOOC then
+        RegisterStateDriver(frame, "visibility", "show")
+    else
+        RegisterStateDriver(frame, "visibility", "[combat][dead] show; hide")
     end
 end
 

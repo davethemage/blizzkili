@@ -40,6 +40,7 @@ Blizzkili.defaults = {
             zoom = true,
         },
         display = {
+            showOOC = true,
             showCooldowns = false,
             showStacks = false,
             glowMain = 2,
