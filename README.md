@@ -36,23 +36,24 @@ A rotation helper addon for World of Warcraft 12.0.0 (Midnight Patch) based on H
 ## Configuration Options
 
 ### General Settings
+- **Growth Direction** - Direction to grow the list
+- **Zoom Textures** - Removes the border from the button textures(square)
+- **Show Out of Combat** - Hide/Show when out of combat
+- **Glow Type** - Pick a glow type for the main button
+- **Custom Glow Color** - Pick a custom glow color
+- **Position X** - Overall X Position
+- **Position Y** - Overall Y Position
+- **Anchor** - Anchor point of the Main Blizzkili frame
+- **Parent Anchor** - Anchor Point to the screen
 - **Lock Frames** - Prevent frames from being moved
+- **Show Move Frame** - Hide/Show the box to move the frame around
 
 ### Button Settings
 - **Number of Buttons** - How many ability buttons to display (1-10)
 - **Main Button Scale** - Scale the main button by a percentage
 - **Button Size** - Base button size in pixels (1-150)
 - **Button Spacing** - Space between buttons (0-20)
-- **Layout** - Growth Direction
-- **Zoom Button Textures** - Removes the border from the button textures(square)
-
-### Display Settings
-- **Glow Type** - Pick a glow type for the main button
-- **Custom Glow Color** - Pick a custom glow color
-- **Position X** - Overall X Position
-- **Position Y** - Overall Y Position
-- **Anchor** - Anchor point of the Main Blizzkili frame
-- **Parent Anchor ** - Anchor Point to the screen
+- **Show Swipe** - Show GCD/Swipe
 
 ### Keybind Settings
 - **Enable Keybinds** Show/Hide Keybinds
@@ -65,6 +66,12 @@ A rotation helper addon for World of Warcraft 12.0.0 (Midnight Patch) based on H
 - **X offset** - X offset for the Keybind
 - **Y offset** - Y offset for the Keybind
 
+### Keybind Overrides
+- Ability to override spell keybinds
+
+### Blacklist
+- Ability to blacklist spells from the list
+
 ### Miscellaneous Settings
 - **Debug Mode** - Debug printout verbosity(not in use)
 
@@ -76,10 +83,10 @@ A rotation helper addon for World of Warcraft 12.0.0 (Midnight Patch) based on H
 
 ## Version
 
-- Current: 1.0.4
-- WoW Patch: 12.0.0 (Midnight)
+- Current: 1.0.5
+- WoW Patch: 12.0.5 (Midnight)
 
 ## TODO/Future Plans
 
-- Border Configuration
+- Cooldown text fixes
 - Cooldown Management(needs custom cooldown tracking)
