@@ -93,6 +93,13 @@ function BlizzardAPI.IsSpellOnCooldown(spellId)
 
 end
 
+-- GCD is not secret
+function BlizzardAPI.GetGCDInfo()
+  local spellId = 61304 --GCD ID
+  local cooldownInfo = C_Spell.GetSpellCooldown(spellId)
+  return cooldownInfo
+end
+
 function BlizzardAPI.InCombat()
     return BlizzardAPI.InCombatLockdown()
 end

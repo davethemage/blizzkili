@@ -47,21 +47,12 @@ function Blizzkili:OnEnable()
     self:RegisterEvent("ACTIONBAR_SLOT_CHANGED", "ActionbarChanged")
     self:RegisterEvent("PLAYER_REGEN_ENABLED", "OutOfCombat")
     self:RegisterEvent("PLAYER_REGEN_DISABLED", "InCombat")
-    self:RegisterEvent("UNIT_AURA", "OnUnitAura")
 end
 
 -- Handle player login
 function Blizzkili:OnLogin()
     info("Player logged in,")
     self.isInitalized = false
-end
-
--- Update OnUnitAura
--- TODO Fires alot might not be needed
-function Blizzkili:OnUnitAura(unit)
-    -- if unit == "player" then
-    --     self:UpdateRotation()
-    -- end
 end
 
 -- PlayerEnteringWorld event handler

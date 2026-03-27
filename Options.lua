@@ -253,8 +253,8 @@ function Options:SetupOptions()
                         end,
                     },
                     showSwipe = {
-                        name = "Show CD/GCD swipe",
-                        desc = "Show the swipe overlay for Cooldowns or GCD",
+                        name = "Show GCD swipe",
+                        desc = "Show the swipe overlay for GCDs",
                         type = "toggle",
                         order = 20,
                         width = med_element,

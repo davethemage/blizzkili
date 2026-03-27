@@ -17,10 +17,11 @@ local function UpdateButtonCooldowns(button)
     if button.cooldown then button.cooldown:Clear() end
     error("No Spell id for button: " .. button:GetName())
   end
-  -- use C_Spell instead of BlizzardAPI library. We will not be doing any computation with secret values
-  local spellId = button.spellId
-  local cooldownInfo = C_Spell.GetSpellCooldown and C_Spell.GetSpellCooldown(spellId)
+  -- We dont need spellId yet. we arent tracking real cooldowns(yet)
+  -- local spellId = button.spellId
+  local cooldownInfo = BlizzardAPI.GetGCDInfo()
   if not Blizzkili.db.profile.buttons.cdSwipe then
+    button.cooldown:SetDrawEdge(false)
     button.cooldown:SetDrawSwipe(false)
     button.cooldown:Hide()
     button.cooldown:Clear()
@@ -32,6 +33,7 @@ local function UpdateButtonCooldowns(button)
 
     -- Because Cooldowns values are secret, we hand off everything to the cooldown frame
     if not button._cooldownShown and Blizzkili.db.profile.buttons.cdSwipe then
+      button.cooldown:SetDrawEdge(true)
       button.cooldown:SetDrawSwipe(true)
       button.cooldown:Show()
       button._cooldownShown = true
@@ -51,7 +53,7 @@ local function CreateCooldown(button)
   local cooldown = CreateFrame("Cooldown", button:GetName() .. "_Cooldown", button, "CooldownFrameTemplate")
   cooldown:SetPoint("TOPLEFT", button, "TOPLEFT", 0, -0)
   cooldown:SetPoint("BOTTOMRIGHT", button, "BOTTOMRIGHT", 0, 0)
-  cooldown:SetDrawEdge(false)
+  cooldown:SetDrawEdge(true)
   cooldown:SetDrawSwipe(true)
   cooldown:SetReverse(false)
   cooldown:SetSwipeColor(0, 0, 0, 0.6)
