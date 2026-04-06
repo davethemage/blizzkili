@@ -364,7 +364,7 @@ function Options:SetupOptions()
                         get = function() return Blizzkili.db.profile.display.showOOC end,
                         set = function(_, value)
                             Blizzkili.db.profile.display.showOOC = value
-                            Blizzkili:UpdateButtons()
+                            UILib.UpdateButtons()
                         end,
                     },
             --     scale = {

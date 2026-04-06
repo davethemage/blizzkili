@@ -193,7 +193,7 @@ function Blizzkili:ApplyVisibility()
     if self.db.profile.display.showOOC then
         RegisterStateDriver(frame, "visibility", "show")
     else
-        RegisterStateDriver(frame, "visibility", "[combat][dead] show; hide")
+        RegisterStateDriver(frame, "visibility", "[combat][@target,harm,nodead] show; hide")
     end
 end
 
