@@ -33,6 +33,10 @@ local function fontValues()
     return values
 end
 
+local function reloadUI()
+    StaticPopup_Show("BLIZZKILI_RELOAD")
+end
+
 local function orderedLayoutValues()
     local layouts = {
         [1] = "Right",
@@ -308,6 +312,22 @@ function Options:SetupOptions()
                         set = function(_, value)
                             Blizzkili.db.profile.showMoveBox = value
                             Blizzkili:UpdateFrameLock()
+                        end,
+                    },
+                    enabled = {
+                        name = "Enable Blizzkili",
+                        desc = "Toggle the addon on or off",
+                        type = "toggle",
+                        order = 1,
+                        width = "full",
+                        get = function() return Blizzkili.db.profile.enabled end,
+                        set = function(_, value)
+                            Blizzkili.db.profile.enabled = value
+                            if value then
+                                Blizzkili:SetEnable() -- refresh everything when enabling
+                            else
+                                Blizzkili:SetDisable()
+                            end
                         end,
                     },
                     layout = {

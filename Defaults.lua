@@ -14,7 +14,7 @@ addon.version = "1.0.7" --keep in sync with toc and README
 -- Default configuration values
 Blizzkili.defaults = {
     profile = {
-        enabled = true, --todo?
+        enabled = true,
         lockFrames = true,
         scale = 1.0, --todo
         alpha = 1.0, --todo

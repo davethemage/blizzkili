@@ -23,6 +23,7 @@ function Blizzkili:updateTicker()
         self.ticker:Cancel()
         self.ticker = nil
     end
+    if not self.db.profile.enabled then return end
     local updateRate = BlizzardAPI.InCombat() and self.db.profile.inCombatUpdateRate or self.db.profile.outOfCombatUpdateRate
     local inInstance, _ = IsInInstance()
     if inInstance then
@@ -30,6 +31,18 @@ function Blizzkili:updateTicker()
         updateRate = self.db.profile.inCombatUpdateRate
     end
     self.ticker = C_Timer.NewTicker(updateRate, function() self:UpdateRotation() end)
+end
+
+function Blizzkili:SetDisable()
+    self:updateTicker()
+    self:ApplyVisibility()
+    Blizzkili.frame:Hide()
+end
+
+function Blizzkili:SetEnable()
+    Blizzkili.frame:Show()
+    self:ApplyVisibility()
+    self:updateTicker()
 end
 
 -- Initialize the addon
@@ -90,6 +103,7 @@ function Blizzkili:PlayerEnteringWorld()
 end
 
 function Blizzkili:OutOfCombat()
+    if not self.db.profile.enabled then return end
     UILib.UpdateButtons()
     ActionBarScanner:ScanActionBars()
     -- Out of combat we can update less frequently since we can use all API functions, so we can slow down the ticker to reduce CPU usage.
@@ -97,6 +111,7 @@ function Blizzkili:OutOfCombat()
 end
 
 function Blizzkili:InCombat()
+    if not self.db.profile.enabled then return end
     self:updateTicker()
 end
 
@@ -138,6 +153,7 @@ end
 -- Update the rotation display
 function Blizzkili:UpdateRotation()
     self:ApplyVisibility()
+    if not self.db.profile.enabled then return end
     -- This implements the Single Button Assistant rotation logic
     if not self.buttons then
         error("No buttons found, cannot update rotation")
@@ -171,6 +187,8 @@ function Blizzkili:ApplyVisibility()
     if BlizzardAPI.InCombat() then return end
     local frame = Blizzkili.frame
     UnregisterStateDriver(frame, "visibility")
+
+    if not self.db.profile.enabled then return end
 
     if self.db.profile.display.showOOC then
         RegisterStateDriver(frame, "visibility", "show")

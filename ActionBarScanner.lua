@@ -50,6 +50,11 @@ end
 -- Scan all action bars
 function ActionBarScanner:ScanActionBars()
     info("Scanning action bars for spell bindings...")
+    -- if the addon is disabled, skip scanning
+    if not Blizzkili.db.profile.enabled then
+        error("Addon is disabled, skipping action bar scan.")
+        return
+    end
     --reset bindings
     spellBindings = {}
 
