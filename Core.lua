@@ -18,6 +18,20 @@ local error = function(msg) Debug.Error(Blizzkili.db.profile, msg) end
 local info = function(msg) Debug.Info(Blizzkili.db.profile, msg) end
 local trace = function(msg) Debug.Trace(Blizzkili.db.profile, msg) end
 
+function Blizzkili:updateTicker()
+    if self.ticker then
+        self.ticker:Cancel()
+        self.ticker = nil
+    end
+    local updateRate = BlizzardAPI.InCombat() and self.db.profile.inCombatUpdateRate or self.db.profile.outOfCombatUpdateRate
+    local inInstance, _ = IsInInstance()
+    if inInstance then
+        -- in combat update rate if in instanc/raid
+        updateRate = self.db.profile.inCombatUpdateRate
+    end
+    self.ticker = C_Timer.NewTicker(updateRate, function() self:UpdateRotation() end)
+end
+
 -- Initialize the addon
 function Blizzkili:OnInitialize()
     -- Register the database
@@ -67,11 +81,7 @@ function Blizzkili:PlayerEnteringWorld()
     UILib.UpdateButtons()
     -- Lock or unlock the frame
     self:UpdateFrameLock()
-    if self.ticker then
-        self.ticker:Cancel()
-        self.ticker = nil
-    end
-    self.ticker = C_Timer.NewTicker(self.db.profile.outOfCombatUpdateRate, function() self:UpdateRotation() end)
+    self:updateTicker()
     if self.actionbarScanner then
         self.actionbarScanner:Cancel()
         self.actionbarScanner = nil
@@ -81,21 +91,13 @@ end
 
 function Blizzkili:OutOfCombat()
     UILib.UpdateButtons()
-    if self.ticker then
-        self.ticker:Cancel()
-        self.ticker = nil
-    end
     ActionBarScanner:ScanActionBars()
     -- Out of combat we can update less frequently since we can use all API functions, so we can slow down the ticker to reduce CPU usage.
-    self.ticker = C_Timer.NewTicker(self.db.profile.outOfCombatUpdateRate, function() self:UpdateRotation() end)
+    self:updateTicker()
 end
 
 function Blizzkili:InCombat()
-    if self.ticker then
-        self.ticker:Cancel()
-        self.ticker = nil
-    end
-    self.ticker = C_Timer.NewTicker(self.db.profile.inCombatUpdateRate, function() self:UpdateRotation() end)
+    self:updateTicker()
 end
 
 --Action bar changed event handler
@@ -110,6 +112,7 @@ end
 
 -- Update frame lock status
 function Blizzkili:UpdateFrameLock()
+    if BlizzardAPI.InCombat() then return end
     trace("Updating frame lock status")
     if not self.frame then return end
 
