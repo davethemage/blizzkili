@@ -83,8 +83,8 @@ A rotation helper addon for World of Warcraft 12.0.0 (Midnight Patch) based on H
 
 ## Version
 
-- Current: 1.0.8
-- WoW Patch: 12.0.5 (Midnight)
+- Current: 1.1.0
+- WoW Patch: 12.1.0 (Midnight)
 
 ## TODO/Future Plans
 
